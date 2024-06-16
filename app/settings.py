@@ -25,10 +25,43 @@ SECRET_KEY = "django-insecure-$m05+oyc)=#6h)g_(3%q9^5tnm3rnnu-!)b!5h2y5e8$l1%v%v
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 
+# OAUTH 2.0
+AUTHENTICATION_BACKENDS = ("allauth.account.auth_backends.AuthenticationBackend",)
 
-# Application definition
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
+
+from decouple import config
+
+AUTH_REDIRECT_URI = "http://127.0.0.1:8000"
+CALENDAR_EVENTS_SCOPE = "https://www.googleapis.com/auth/calendar.events"
+GOOGLE_CLIENT_ID = (
+    "760635798221-gs868ee4pqbo6r47f9chsh310g29mjlf.apps.googleusercontent.com"
+)
+GOOGLE_CLIENT_SECRET = config("GOOGLE_CLIENT_SECRET")
+
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "SCOPE": [
+            "profile",
+            "email",
+            "https://www.googleapis.com/auth/calendar.events",
+        ],
+        "AUTH_PARAMS": {"access_type": "offline",
+                        "prompt": "consent",},
+        # "REDIRECT_URI": "http://127.0.0.1:8000",
+    }
+}
+
+# SOCIALACCOUNT_PROVIDERS['google']['APP'] = {
+#     'client_id': GOOGLE_CLIENT_ID,
+#     'secret': GOOGLE_CLIENT_SECRET,
+#     'key': ''
+# }
+
+SITE_ID = 1
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -37,11 +70,16 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
+    # OAUTH
+    "django.contrib.sites",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
     "main",
     "habits",
-    # "tasks", 
-
+    "tasks",
+    "google_auth",
 ]
 
 MIDDLEWARE = [
@@ -52,6 +90,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "app.urls"
@@ -126,3 +165,6 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+

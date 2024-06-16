@@ -1,16 +1,40 @@
 from django.db import models
+from datetime import date, timedelta
 
 
 # Create your models here.
 class Task(models.Model):
-    name = models.CharField(max_length=120, unique=True)
-    duration = models.JSONField() 
-    schedule = models.JSONField()
-    ideal_time = models.TimeField(blank=True, null=True)
-    private = models.BooleanField(default=True)
+
+    PRIORITY_CHOICES = [
+        ("critical", "Critical"),
+        ("high", "High"),
+        ("medium", "Medium"),
+        ("low", "Low"),
+    ]
+
+    name = models.CharField(max_length=255)
+    priority = models.CharField(max_length=8, choices=PRIORITY_CHOICES, default=("high", "High"))
+    time_needed = models.IntegerField(default=60)
+    min_duration = models.IntegerField(default=0)
+    max_duration = models.IntegerField(default=0)
+    due_date = models.DateField(blank=True)
+    schedule_after = models.DateField(default=date.today)
+    # hours_category = models.
+    # private = models.BooleanField(default=True)
+    visibility = models.CharField(
+        max_length=200, default="Busy"
+    )  # Что показывается в календаре для других людей
+    notes = models.TextField(blank=True)
 
     def __str__(self):
         return "%s (id %s)" % (self.name, self.pk)
+
+    def save(self, *args, **kwargs):
+        if not self.min_duration:
+            self.min_duration = self.time_needed
+        if not self.max_duration:
+            self.max_duration = self.time_needed
+        super(Task, self).save(*args, **kwargs)
 
     class Meta:
         db_table = "task"

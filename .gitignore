@@ -5,6 +5,10 @@ __pycache__/
 .vscode
 .idea
 
+.github
+credentials.json
+refresh.txt
 db.sqlite3
 media/
 frontend/
+.env

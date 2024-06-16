@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>События на следующую неделю</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+        }
+        #events {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);
+        }
+        .event {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to TimeFlow - the smart(est) planning app</h1>
+    <div id="events">
+        <ul>
+            {% if not events %}
+            <div>No upcoming events</div>
+            {% endif %}
+            {% for event in events %}
+            <li>
+                <div>{{ event.summary }}</div>
+                <div class=event>{{ event.start.dateTime }} - {{ event.end.dateTime }}<div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>

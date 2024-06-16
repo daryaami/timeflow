@@ -6,6 +6,7 @@ __pycache__/
 .idea
 
 .github
+user_creds
 credentials.json
 refresh.txt
 db.sqlite3

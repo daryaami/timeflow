@@ -10,7 +10,7 @@ from googleapiclient.errors import HttpError
 
 from django.shortcuts import render, redirect
 
-SCOPES = [settings.CALENDAR_EVENTS_SCOPE]
+app_name = 'main'
 
 # Переделать на базу данных
 def get_user_credentials(user_id):
@@ -27,15 +27,10 @@ def get_user_credentials(user_id):
                 token_uri='https://oauth2.googleapis.com/token',
                 client_id=settings.GOOGLE_CLIENT_ID,
                 client_secret=settings.GOOGLE_CLIENT_SECRET,
-                scopes=SCOPES
+                scopes=settings.SCOPES
             )
     else:
         # Переделать
         return LookupError
     
     return credentials
-
-
-# Переделать на базу данных
-def get_events(user_id):
-    ...

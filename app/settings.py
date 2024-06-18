@@ -27,39 +27,15 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-# OAUTH 2.0
-AUTHENTICATION_BACKENDS = ("allauth.account.auth_backends.AuthenticationBackend",)
-
-LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL = "/"
-
 from decouple import config
 
 AUTH_REDIRECT_URI = "http://127.0.0.1:8000"
-CALENDAR_EVENTS_SCOPE = "https://www.googleapis.com/auth/calendar.events"
 GOOGLE_CLIENT_ID = (
     "760635798221-gs868ee4pqbo6r47f9chsh310g29mjlf.apps.googleusercontent.com"
 )
 GOOGLE_CLIENT_SECRET = config("GOOGLE_CLIENT_SECRET")
 
-SOCIALACCOUNT_PROVIDERS = {
-    "google": {
-        "SCOPE": [
-            "profile",
-            "email",
-            "https://www.googleapis.com/auth/calendar.events",
-        ],
-        "AUTH_PARAMS": {"access_type": "offline",
-                        "prompt": "consent",},
-        # "REDIRECT_URI": "http://127.0.0.1:8000",
-    }
-}
-
-# SOCIALACCOUNT_PROVIDERS['google']['APP'] = {
-#     'client_id': GOOGLE_CLIENT_ID,
-#     'secret': GOOGLE_CLIENT_SECRET,
-#     'key': ''
-# }
+SCOPES = ["https://www.googleapis.com/auth/calendar.events", "https://www.googleapis.com/auth/userinfo.profile", 'https://www.googleapis.com/auth/userinfo.email']
 
 SITE_ID = 1
 
@@ -70,16 +46,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # OAUTH
-    "django.contrib.sites",
-    "allauth",
-    "allauth.account",
-    "allauth.socialaccount",
-    "allauth.socialaccount.providers.google",
+
     "main",
     "habits",
     "tasks",
     "google_auth",
+    # "users"
 ]
 
 MIDDLEWARE = [
@@ -90,7 +62,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "app.urls"
@@ -98,7 +69,7 @@ ROOT_URLCONF = "app.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [ BASE_DIR / "templates" ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -165,6 +136,3 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-
-

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasks - TimeFlow</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 200px;
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .sidebar ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            margin: 10px 0;
+        }
+
+        .sidebar ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        .content {
+            flex-grow: 1;
+            background-color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f1f1f1;
+            padding: 10px 20px;
+            border-bottom: 1px solid #ccc;
+            flex-shrink: 0;
+        }
+
+        .topbar-right a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: black;
+        }
+
+        .taskbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+
+        .taskbar input[type="search"] {
+            padding: 5px;
+            font-size: 16px;
+        }
+
+        .taskbar select {
+            padding: 5px;
+            font-size: 16px;
+        }
+
+        .taskbar button {
+            padding: 5px 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .tasks {
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .task-card {
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            margin-bottom: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .task-card h2 {
+            font-size: 18px;
+            margin: 0 0 10px 0;
+        }
+
+        .task-card p {
+            margin: 0 0 10px 0;
+        }
+
+        .task-card .icons {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+        }
+
+        .task-card .icons img {
+            width: 20px;
+            height: 20px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h1>TimeFlow</h1>
+        <ul>
+            <li><a href="{% url 'main:planner' %}">Planner</a></li>
+            <li><a href="{% url 'habits:index' %}">Habits</a></li>
+            <li><a href="#">Tasks</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+    </div>
+    <div class="content">
+        <div class="topbar">
+            <span>Tasks</span>
+            <div class="topbar-right">
+                <a href="#">Profile</a>
+                <a href="/admin">Admin</a>
+            </div>
+        </div>
+        <div class="taskbar">
+            <input type="search" placeholder="Search tasks...">
+            <div>
+                <select>
+                    <option value="all">All</option>
+                    <option value="completed">Completed</option>
+                    <option value="pending">Pending</option>
+                </select>
+                <button>+ New Task</button>
+            </div>
+        </div>
+        <div class="tasks">
+            {% for task in tasks %}
+                <div class="task-card" onclick="location.href='#'">
+                    <div>
+                        <h2>{{ task.name }}</h2>
+                        <p>Duration: {{ task.duration }}</p>
+                        <p>Deadline: {{ task.deadline }}</p>
+                    </div>
+                    <div class="icons">
+                        <img src="{% static 'tasks/edit-icon.png' %}" alt="Edit">
+                        <img src="{% static 'tasks/start-icon.png' %}" alt="Start">
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

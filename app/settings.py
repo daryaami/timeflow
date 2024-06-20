@@ -30,12 +30,20 @@ ALLOWED_HOSTS = ["*"]
 from decouple import config
 
 AUTH_REDIRECT_URI = "http://127.0.0.1:8000"
-GOOGLE_CLIENT_ID = (
-    "760635798221-gs868ee4pqbo6r47f9chsh310g29mjlf.apps.googleusercontent.com"
-)
+# GOOGLE_CLIENT_ID = (config("GOOGLE_CLIENT_ID"))
+GOOGLE_CLIENT_ID = ("760635798221-km4u4ssajmptuu49e8t1p7pkriq96dl2.apps.googleusercontent.com"),
 GOOGLE_CLIENT_SECRET = config("GOOGLE_CLIENT_SECRET")
+AUTH_URI = "https://accounts.google.com/o/oauth2/v2/auth"
+TOKEN_URI = "https://oauth2.googleapis.com/token"
+auth_provider_x509_cert_url = "https://www.googleapis.com/oauth2/v1/certs",
 
-SCOPES = ["https://www.googleapis.com/auth/calendar.events", "https://www.googleapis.com/auth/userinfo.profile", 'https://www.googleapis.com/auth/userinfo.email']
+GOOGLE_CLIENT_SECRETS_FILE = 'credentials.json'
+
+SCOPES = [
+    "https://www.googleapis.com/auth/calendar.events",
+    "https://www.googleapis.com/auth/userinfo.profile",
+    "https://www.googleapis.com/auth/userinfo.email",
+]
 
 SITE_ID = 1
 
@@ -46,12 +54,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
+    "django.contrib.postgres",
+    # "debug_toolbar",
     "main",
     "habits",
     "tasks",
     "google_auth",
-    # "users"
+    "users"
 ]
 
 MIDDLEWARE = [
@@ -62,6 +71,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = "app.urls"
@@ -69,7 +79,7 @@ ROOT_URLCONF = "app.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [ BASE_DIR / "templates" ],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -90,8 +100,12 @@ WSGI_APPLICATION = "app.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "timeflow",
+        "USER": "timeflow",
+        "PASSWORD": "timeflow",
+        "HOST": "localhost",
+        "PORT": "5434",
     }
 }
 
@@ -136,3 +150,4 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+AUTH_USER_MODEL = 'users.CustomUser'

@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+{% load static %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TimeFlow</title>
+    <title>Habits - TimeFlow</title>
     <style>
         body {
             margin: 0;
@@ -68,53 +69,103 @@
             color: black;
         }
 
-        .events {
+        .habits-header {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-top: 20px;
+            padding: 10px 20px;
+            flex-shrink: 0;
+        }
+
+        .habits-header .new-habit-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .habits {
             margin-top: 20px;
             overflow-y: auto;
             flex-grow: 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
         }
 
-        .event {
+        .habit-card {
+            background-color: white;
             border: 1px solid #ccc;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
+            padding: 20px;
+            border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            cursor: pointer;
+            height: auto;
+            max-height: 120px;
         }
 
-        .event h2 {
-            font-size: 18px; /* Уменьшенный размер шрифта для названий событий */
+        .habit-card h2 {
+            font-size: 18px;
+            margin: 0 0 10px 0;
         }
 
+        .habit-card p {
+            margin: 0 0 10px 0;
+        }
+
+        .habit-card .icons {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .habit-card .icons img {
+            width: 20px;
+            height: 20px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div class="sidebar">
         <h1>TimeFlow</h1>
         <ul>
-            <li><a href="#">Planner</a></li>
-            <li><a href="{% url 'habits:index' %}">Habits</a></li>
+            <li><a href="{% url 'main:planner' %}">Planner</a></li>
+            <li><a href="#">Habits</a></li>
             <li><a href="{% url 'tasks:index' %}">Tasks</a></li>
             <li><a href="#">Settings</a></li>
         </ul>
     </div>
     <div class="content">
         <div class="topbar">
-            <span>Planner</span>
+            <span>Habits</span>
             <div class="topbar-right">
                 <a href="#">Profile</a>
                 <a href="/admin">Admin</a>
             </div>
         </div>
-        <div class="events">
-            {% for event in events %}
-                <div class="event">
-                    <h2>{{ event.summary }}</h2>
-                    <p>{{ event.start.dateTime }} - {{ event.end.dateTime }}</p>
+        <div class="habits-header">
+            <button class="new-habit-btn">+ New Habit</button>
+        </div>
+        <div class="habits">
+            {% for habit in habits %}
+                <div class="habit-card" onclick="location.href='#'">
+                    <h2>{{ habit.name }}</h2>
+                    <p>{{ habit.duration }}</p>
+                    <div class="icons">
+                        <img src="{% static 'habits/edit-icon.png' %}" alt="Edit">
+                        <img src="{% static 'habits/start-icon.png' %}" alt="Start">
+                    </div>
                 </div>
             {% endfor %}
         </div>
     </div>
 </body>
 </html>
-

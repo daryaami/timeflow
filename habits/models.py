@@ -1,5 +1,6 @@
 from django.db import models
 from datetime import time, date
+from users.models import CustomUser
 
 # Create your models here.
 class Habit(models.Model):
@@ -25,11 +26,11 @@ class Habit(models.Model):
     # DEFAULT_SCHEDULE = {"period": ('weekly', 'Weekly'), "times": "1"}
 
     name = models.CharField(max_length=255)
-    priority = models.CharField(max_length=8, choices=PRIORITY_CHOICES, default=('high', 'High'))
+    priority = models.CharField(choices=PRIORITY_CHOICES, default='high', max_length=20)
     min_duration = models.IntegerField(default=30) # Длительность в минутах
     max_duration = models.IntegerField(default=60)
-    category = models.CharField(max_length=10, choices=CATEGORY_CHOICES, default=('personal', 'Personal'))
-    period = models.CharField(max_length=10, choices=PERIOD_CHOICES, default=('weekly', 'Weekly'))
+    category = models.CharField(choices=CATEGORY_CHOICES, default='personal', max_length=20)
+    period = models.CharField(choices=PERIOD_CHOICES, default='weekly', max_length=20)
     times_per_period = models.SmallIntegerField(default=1)
     # schedule = models.JSONField(verbose_name='period & times per period', default=DEFAULT_SCHEDULE) # Расписание в виде {'period': 'weekly', 'times': '3'}
     ideal_days = models.JSONField(blank=True, null=True)
@@ -39,6 +40,7 @@ class Habit(models.Model):
     # private = models.BooleanField(default=True) # Приватность отображения в календаре для других
     visibility = models.CharField(max_length=200, default='Busy') # Что показывается в календаре для других людей
     notes = models.TextField(blank=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='habits', null=True)
     
     # hours_category = 
     # hours = 

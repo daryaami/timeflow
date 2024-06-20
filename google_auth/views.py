@@ -9,9 +9,7 @@ from jwt.algorithms import RSAAlgorithm
 from django import urls
 
 
-# Create your views here.
-def index(request):
-    return render(request, "google_auth/index.html")
+from app import settings
 
 
 def google_auth_redirect(request):
@@ -27,8 +25,9 @@ def google_auth_redirect(request):
         f"&scope={scope}"
         f"&response_type={response_type}"
         f"&access_type=offline"
-        # f"&prompt=consent"  # убрать
+        f"&prompt=consent"  # убрать
     )
+
     return redirect(auth_url)
 
 
@@ -45,40 +44,34 @@ def oauth2callback(request):
             "grant_type": "authorization_code",
         }
 
-        response = requests.post(token_url, data=data)
+    response = requests.post(token_url, data=data)
 
-        if response.status_code == 200:
-            token_data = response.json()
+    return JsonResponse({'response': response.json()})
 
-            # json.dump(token_data, open("user_creds/1.json", "w"))
+    if response.status_code == 200:
+        token_data = response.json()
 
-            id_token = token_data.get("id_token")
+        return JsonResponse({'token': token_data})
 
-            if id_token:
-                decoded_id_token = decode_id_token(id_token, settings.GOOGLE_CLIENT_ID)
-            #     return JsonResponse({"token_data": token_data, "decoded_id_token": decoded_id_token})
-            http = redirect("planner")
-            http.set_cookie('auth_token', decoded_id_token['sub'])
-            return http
-            # return JsonResponse({"token_data": token_data})
+        json.dump(token_data, open("user_creds/1.json", "w"))
 
-            # access_token = token_data.get("access_token")
-            # refresh_token = token_data.get("refresh_token")
+        # id_token = token_data.get("id_token")
 
-            # if refresh_token:
-            #     with open("refresh.txt", 'w') as file:
-            #         file.write(str(refresh_token))
+        # if id_token:
+        #     decoded_id_token = decode_id_token(id_token, settings.GOOGLE_CLIENT_ID)
+            
+        # http = redirect("main:planner")
+        # http.set_cookie('auth_token', decoded_id_token['sub'], max_age=None)
+        # return http
+        return JsonResponse({"token_data": token_data})
 
-        else:
-            return ValueError("Failed to retrieve access token")  # исправить на консоль
-
-    return ValueError("No auth code provided")  # исправить на консоль
+    # else:
+    #     return JsonResponse({'error': "Failed to retrieve access token"})  # исправить на консоль
 
 
 def refresh_access_token(request):
     with open("refresh.txt", "r") as file:
         refresh_token = file.readline().strip()
-
     token_url = "https://oauth2.googleapis.com/token"
 
     data = {
@@ -105,7 +98,7 @@ def get_google_public_keys():
         raise ValueError("Could not retrieve public keys from Google")
 
 
-def decode_id_token(id_token, audience, leeway=10810):  # 10800 секунд = 3 часа
+def decode_id_token(id_token, audience, leeway=10810):
     public_keys = get_google_public_keys()
     header = jwt.get_unverified_header(id_token)
     key_id = header["kid"]
@@ -143,3 +136,5 @@ def decode_id_token(id_token, audience, leeway=10810):  # 10800 секунд = 3
 # "sub": "103244520135763203631", "email": "daryaami10@gmail.com", 
 # "email_verified": true, "at_hash": "tCsOPiQqo3RMLRFu4pDT_A", 
 # "iat": 1718743268, "exp": 1718746868}}
+
+

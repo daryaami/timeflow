@@ -31,6 +31,6 @@ def get_user_credentials(user_id):
             )
     else:
         # Переделать
-        return LookupError
+        return None
     
     return credentials

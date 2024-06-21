@@ -1,8 +1,10 @@
 from django.urls import path
 from . import views
 
+app_name = 'auth'
+
 urlpatterns = [
-    path('redirect/', views.google_auth_redirect, name='google_auth_redirect'),
-    path('oauth2callback/', views.oauth2callback, name='oauth2callback'),
-    path('refresh_access_token/', views.refresh_access_token, name='refresh_access_token'),
+    path("login/", views.login_view, name='login'),
+    path("register/", views.register, name='register'),
+    path("google_oauth/", views.google_oauth, name='google_oauth'),
 ]

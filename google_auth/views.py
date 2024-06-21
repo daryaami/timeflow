@@ -1,140 +1,123 @@
-from django.shortcuts import render, redirect
+from django.utils import timezone
+from datetime import timedelta
+import os
+import requests
+from django.shortcuts import redirect
+from django.contrib.auth import login
 from django.http import JsonResponse
-import requests
-import json
 from app import settings
-import requests
-import jwt
-from jwt.algorithms import RSAAlgorithm
-from django import urls
+from google_auth_oauthlib.flow import Flow
+from googleapiclient.discovery import build
+
+from users.models import GoogleCredentials, UserCalendar, CustomUser
 
 
-from app import settings
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+scopes = settings.SCOPES
 
 
-def google_auth_redirect(request):
-    scopes = settings.SCOPES
-    scope = " ".join(scopes)
-    auth_uri = "https://accounts.google.com/o/oauth2/v2/auth"
-    response_type = "code"
+def login_view(request):
+    flow = Flow.from_client_secrets_file(
+        settings.GOOGLE_CLIENT_SECRETS_FILE, scopes=scopes)
+    flow.redirect_uri = settings.REDIRECT_URI
 
-    auth_url = (
-        f"{auth_uri}"
-        f"?client_id={settings.GOOGLE_CLIENT_ID}"
-        f"&redirect_uri={settings.AUTH_REDIRECT_URI}"
-        f"&scope={scope}"
-        f"&response_type={response_type}"
-        f"&access_type=offline"
-        f"&prompt=consent"  # убрать
+    authorization_url, state = flow.authorization_url(
+        access_type='offline',
     )
 
-    return redirect(auth_url)
+    request.session['state'] = state
+    return redirect(authorization_url)
 
 
-def oauth2callback(request):
-    code = request.GET.get("code")
+def register(request):
+        flow = Flow.from_client_secrets_file(
+        settings.GOOGLE_CLIENT_SECRETS_FILE, scopes=scopes)
+        flow.redirect_uri = settings.REDIRECT_URI
 
-    if code:
-        token_url = "https://accounts.google.com/o/oauth2/token"
-        data = {
-            "code": code,
-            "client_id": settings.GOOGLE_CLIENT_ID,
-            "client_secret": settings.GOOGLE_CLIENT_SECRET,
-            "redirect_uri": settings.AUTH_REDIRECT_URI,
-            "grant_type": "authorization_code",
-        }
+        authorization_url, state = flow.authorization_url(
+            access_type='offline',
+            prompt='consent',
+        )
 
-    response = requests.post(token_url, data=data)
-
-    return JsonResponse({'response': response.json()})
-
-    if response.status_code == 200:
-        token_data = response.json()
-
-        return JsonResponse({'token': token_data})
-
-        json.dump(token_data, open("user_creds/1.json", "w"))
-
-        # id_token = token_data.get("id_token")
-
-        # if id_token:
-        #     decoded_id_token = decode_id_token(id_token, settings.GOOGLE_CLIENT_ID)
-            
-        # http = redirect("main:planner")
-        # http.set_cookie('auth_token', decoded_id_token['sub'], max_age=None)
-        # return http
-        return JsonResponse({"token_data": token_data})
-
-    # else:
-    #     return JsonResponse({'error': "Failed to retrieve access token"})  # исправить на консоль
+        request.session['state'] = state
+        return redirect(authorization_url)
 
 
-def refresh_access_token(request):
-    with open("refresh.txt", "r") as file:
-        refresh_token = file.readline().strip()
-    token_url = "https://oauth2.googleapis.com/token"
+def google_oauth(request):
+    state = request.session['state']
+    authorization_response = request.get_full_path()
 
-    data = {
-        "client_id": settings.GOOGLE_CLIENT_ID,
-        "client_secret": settings.GOOGLE_CLIENT_SECRET,
-        "refresh_token": refresh_token,
-        "grant_type": "refresh_token",
-    }
+    flow = Flow.from_client_secrets_file(
+        settings.GOOGLE_CLIENT_SECRETS_FILE, scopes=scopes, state=state)
+    flow.redirect_uri = settings.REDIRECT_URI
 
-    response = requests.post(token_url, data=data)
-    response_data = response.json()
+    flow.fetch_token(authorization_response=authorization_response)
+    credentials = flow.credentials
 
-    if "access_token" in response_data:
-        return JsonResponse({"access_token": response_data["access_token"]})
-    else:
-        raise Exception("Could not refresh access token")
+    # Использование userinfo endpoint для получения информации о пользователе
+    userinfo_endpoint = settings.USERINFO_ENDPOINT
+    params = {'alt': 'json', 'access_token': credentials.token}
+    response = requests.get(userinfo_endpoint, params=params)
+    user_info = response.json()
 
-
-def get_google_public_keys():
-    response = requests.get("https://www.googleapis.com/oauth2/v3/certs")
-    if response.status_code == 200:
-        return response.json()
-    else:
-        raise ValueError("Could not retrieve public keys from Google")
-
-
-def decode_id_token(id_token, audience, leeway=10810):
-    public_keys = get_google_public_keys()
-    header = jwt.get_unverified_header(id_token)
-    key_id = header["kid"]
-
-    public_key = None
-    for key in public_keys["keys"]:
-        if key["kid"] == key_id:
-            public_key = RSAAlgorithm.from_jwk(key)
-            break
-
-    if public_key is None:
-        raise ValueError("Public key not found")
+    email = user_info['email']
 
     try:
-        decoded_token = jwt.decode(
-            id_token, public_key, algorithms=["RS256"], audience=audience, leeway=leeway
-        )
-        return decoded_token
-    except jwt.ExpiredSignatureError:
-        raise ValueError("Token has expired")
-    except jwt.InvalidAudienceError:
-        raise ValueError("Invalid audience")
-    except jwt.ImmatureSignatureError:
-        raise ValueError("The token is not yet valid (iat)")
-    except jwt.InvalidTokenError as e:
-        raise ValueError(f"Invalid token: {str(e)}")
+        user = CustomUser.objects.get(email=email)
+        user_credentials = GoogleCredentials.objects.filter(user=user).first()
 
+        if user_credentials and user_credentials.refresh_token:
 
+            if user_credentials.access_token_expiry and user_credentials.access_token_expiry > timezone.now():
+                # Access token is still valid, log in the user and redirect to planner
+                login(request, user)
+                return redirect('main:planner')
+            
+            else:
+                # Refresh the access token
+                refresh_request = requests.post(
+                    settings.TOKEN_URI,
+                    data={
+                        'client_id': user_credentials.client_id,
+                        'client_secret': user_credentials.client_secret,
+                        'refresh_token': user_credentials.refresh_token,
+                        'grant_type': 'refresh_token',
+                    },
+                )
+                new_credentials = refresh_request.json()
+                user_credentials.access_token = new_credentials['access_token']
+                user_credentials.access_token_expiry = timezone.now() + timedelta(seconds=new_credentials['expires_in'])
+                user_credentials.save()
 
-# 
-# {"token_data": {"access_token": "ya29.a0AXooCgvU750ekRYNhC0b-3F84PbtiUWa-s5yl0OiqZEZporRx_6Z3UzJJfJFYI3t8Hp1pEx33ZhYAdgUJVtEy1EQrzLrz_hX6QxIVzsCoi43ALykRmiYfwAB0j6xxW6OO7I5xSgOr51IcSteiz9UqbNbig6RJxj7u6noaCgYKAWsSARESFQHGX2MiY_Oofp3e8sK7hQVXbbVVCw0171", "expires_in": 3599, "refresh_token": "1//0cbsJ8iL66xVeCgYIARAAGAwSNwF-L9IrkOlBX9tHKwI3_rHJR_RGm7WQiwX1sBxCcUcvNBzI7tzRfrekhVxoqXFdSpSa9NZpVFc", "scope": "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/calendar.events openid", "token_type": "Bearer", "id_token": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjNkNTgwZjBhZjdhY2U2OThhMGNlZTdmMjMwYmNhNTk0ZGM2ZGJiNTUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiYXpwIjoiNzYwNjM1Nzk4MjIxLWdzODY4ZWU0cHFibzZyNDdmOWNoc2gzMTBnMjltamxmLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwiYXVkIjoiNzYwNjM1Nzk4MjIxLWdzODY4ZWU0cHFibzZyNDdmOWNoc2gzMTBnMjltamxmLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwic3ViIjoiMTAzMjQ0NTIwMTM1NzYzMjAzNjMxIiwiZW1haWwiOiJkYXJ5YWFtaTEwQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJhdF9oYXNoIjoidENzT1BpUXFvM1JNTFJGdTRwRFRfQSIsImlhdCI6MTcxODc0MzI2OCwiZXhwIjoxNzE4NzQ2ODY4fQ.PR0wxTRv0RJLLHlhtOB6AIe6qRDKvjOydQAEpXmtwuGOC8Wt2XN0tonviT1Itby-oFUHFx-CL3GR3Gma72AbPPxGhEVt-vshcGpqEVkkKpL5mpZGk0lOn6x8fj6MmjzoUaKY6funTKgtHl3CSFOMXu3dVm3gRPF9olT_wSPDT3TD7IaFyyMjJM2WdIYyg6tBAq7mGSZNJIFu0wIQDCwJNntCmyFRugGvBBBK9-lVpppJcWAcOi_90-rZGHR3g4d_u_7F2UYUX-TPYKdXnOa54zvgSqQcobd2r3Iv0FpEGltZXMYYYTYJQIAgXfucouRxKS3udWtAkQki2uImd3bvqQ"}, 
-# "decoded_id_token": {"iss": "accounts.google.com", 
-# "azp": "760635798221-gs868ee4pqbo6r47f9chsh310g29mjlf.apps.googleusercontent.com", 
-# "aud": "760635798221-gs868ee4pqbo6r47f9chsh310g29mjlf.apps.googleusercontent.com", 
-# "sub": "103244520135763203631", "email": "daryaami10@gmail.com", 
-# "email_verified": true, "at_hash": "tCsOPiQqo3RMLRFu4pDT_A", 
-# "iat": 1718743268, "exp": 1718746868}}
+                # Log in the user and redirect to planner
+                login(request, user)
+                return redirect('main:planner')
 
+    except CustomUser.DoesNotExist:
+        name = user_info['name']
+        image_url = user_info.get('picture', '')
 
+        user, created = CustomUser.objects.get_or_create(email=email, defaults={'name': name, 'image': image_url})
+
+        if created:
+            user.set_password(CustomUser.objects.make_random_password())
+            user.save()
+
+    GoogleCredentials.objects.update_or_create(user=user, defaults={
+        'access_token': credentials.token,
+        'refresh_token': credentials.refresh_token or user_credentials.refresh_token if user_credentials else credentials.refresh_token,
+        'token_uri': credentials.token_uri,
+        'client_id': credentials.client_id,
+        'client_secret': credentials.client_secret,
+        'scopes': ','.join(credentials.scopes),
+        'access_token_expiry': timezone.now() + timedelta(seconds=credentials.expiry)
+    })
+
+    calendar_service = build('calendar', 'v3', credentials=credentials)
+    calendars = calendar_service.calendarList().list().execute()
+
+    for calendar in calendars['items']:
+        UserCalendar.objects.update_or_create(user=user, calendar_id=calendar['id'], defaults={'summary': calendar['summary']})
+
+    login(request, user)
+    return redirect('main:planner')

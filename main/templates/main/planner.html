@@ -107,10 +107,23 @@
             </div>
         </div>
         <div class="events">
-            {% for event in events %}
-                <div class="event">
-                    <h2>{{ event.summary }}</h2>
-                    <p>{{ event.start.dateTime }} - {{ event.end.dateTime }}</p>
+            {% for day, data in events.days.items %}
+                <div class="day">
+                    <h3>{{ day|capfirst }} - {{ data.date }}</h3>
+                    {% if data.events %}
+                        {% for event in data.events %}
+                            <div class="event">
+                                <h2>{{ event.summary }}</h2>
+                                {% if event.start.dateTime and event.end.dateTime %}
+                                    <p>{{ event.start.dateTime }} - {{ event.end.dateTime }}</p>
+                                {% else %}
+                                    <p>All day event</p>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>No events</p>
+                    {% endif %}
                 </div>
             {% endfor %}
         </div>

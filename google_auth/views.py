@@ -115,7 +115,13 @@ def google_oauth(request):
 
     calendar_service = build('calendar', 'v3', credentials=credentials)
     calendars = calendar_service.calendarList().list().execute()
-
+    
+    primary_calendar = next((cal for cal in calendars['items'] if cal.get('primary', False)), None)
+    if primary_calendar:
+        user_timezone = primary_calendar['timeZone']
+        user.time_zone = user_timezone
+        user.save()
+    
     for calendar in calendars['items']:
         UserCalendar.objects.update_or_create(user=user, calendar_id=calendar['id'], defaults={'summary': calendar['summary']})
 

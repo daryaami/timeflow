@@ -105,7 +105,7 @@ def google_oauth(request):
 
     GoogleCredentials.objects.update_or_create(user=user, defaults={
         'access_token': credentials.token,
-        'refresh_token': credentials.refresh_token or user_credentials.refresh_token if user_credentials else credentials.refresh_token,
+        'refresh_token': credentials.refresh_token or user_credentials.refresh_token,
         'token_uri': credentials.token_uri,
         'client_id': credentials.client_id,
         'client_secret': credentials.client_secret,

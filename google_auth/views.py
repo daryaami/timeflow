@@ -69,7 +69,7 @@ def google_oauth(request):
             if user_credentials.access_token_expiry and user_credentials.access_token_expiry > timezone.now():
                 # Access token is still valid, log in the user and redirect to planner
                 login(request, user)
-                return redirect('main:planner')
+                return redirect('planner:index')
             else:
                 # Refresh the access token
                 refresh_request = requests.post(
@@ -88,7 +88,7 @@ def google_oauth(request):
 
                 # Log in the user and redirect to planner
                 login(request, user)
-                return redirect('main:planner')
+                return redirect('planner:index')
             
         else:
             redirect("auth:register")
@@ -131,4 +131,4 @@ def google_oauth(request):
         UserCalendar.objects.update_or_create(user=user, calendar_id=calendar['id'], defaults={'summary': calendar['summary']})
 
     login(request, user)
-    return redirect('main:planner')
+    return redirect('planner:index')

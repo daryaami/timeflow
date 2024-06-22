@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "django.contrib.postgres",
     # "debug_toolbar",
     "main",
+    "planner",
     "habits",
     "tasks",
     "google_auth",

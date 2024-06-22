@@ -54,10 +54,9 @@ def google_oauth(request):
     flow.fetch_token(authorization_response=authorization_response)
     credentials = flow.credentials
 
-    # Использование userinfo endpoint для получения информации о пользователе
-    userinfo_endpoint = settings.USERINFO_ENDPOINT
+    # Использование userinfo endpoint для получения информации о пользователе - вынести в функцию
     params = {'alt': 'json', 'access_token': credentials.token}
-    response = requests.get(userinfo_endpoint, params=params)
+    response = requests.get(settings.USERINFO_ENDPOINT, params=params)
     user_info = response.json()
 
     email = user_info['email']
@@ -67,12 +66,10 @@ def google_oauth(request):
         user_credentials = GoogleCredentials.objects.filter(user=user).first()
 
         if user_credentials and user_credentials.refresh_token:
-
             if user_credentials.access_token_expiry and user_credentials.access_token_expiry > timezone.now():
                 # Access token is still valid, log in the user and redirect to planner
                 login(request, user)
                 return redirect('main:planner')
-            
             else:
                 # Refresh the access token
                 refresh_request = requests.post(
@@ -92,25 +89,33 @@ def google_oauth(request):
                 # Log in the user and redirect to planner
                 login(request, user)
                 return redirect('main:planner')
+            
+        else:
+            redirect("auth:register")
 
     except CustomUser.DoesNotExist:
-        name = user_info['name']
-        image_url = user_info.get('picture', '')
+        if credentials.refresh_token:
+            name = user_info['name']
+            image_url = user_info.get('picture', '')
 
-        user, created = CustomUser.objects.get_or_create(email=email, defaults={'name': name, 'image': image_url})
+            user, created = CustomUser.objects.get_or_create(email=email, defaults={'name': name, 'image': image_url})
 
-        if created:
-            user.set_password(CustomUser.objects.make_random_password())
-            user.save()
+            if created:
+                user.set_password(CustomUser.objects.make_random_password())
+                user.save()
 
+    if not credentials.refresh_token:
+        return redirect("auth:register")
+
+    # Update or create GoogleCredentials
     GoogleCredentials.objects.update_or_create(user=user, defaults={
         'access_token': credentials.token,
-        'refresh_token': credentials.refresh_token or user_credentials.refresh_token if user_credentials else credentials.refresh_token,
+        'refresh_token': credentials.refresh_token,
         'token_uri': credentials.token_uri,
         'client_id': credentials.client_id,
         'client_secret': credentials.client_secret,
         'scopes': ','.join(credentials.scopes),
-        'access_token_expiry': timezone.now() + timedelta(seconds=credentials.expiry)
+        'access_token_expiry': credentials.expiry
     })
 
     calendar_service = build('calendar', 'v3', credentials=credentials)

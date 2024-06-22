@@ -10,6 +10,5 @@ user_creds
 refresh.txt
 db.sqlite3
 media/
-frontend/
 .env
 *.json

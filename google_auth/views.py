@@ -104,7 +104,7 @@ def google_oauth(request):
                 user.set_password(CustomUser.objects.make_random_password())
                 user.save()
 
-    if not credentials.refresh_token:
+    if not user and not credentials.refresh_token:
         return redirect("auth:register")
 
     # Update or create GoogleCredentials

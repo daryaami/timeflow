@@ -24,6 +24,5 @@ urlpatterns = [
     path('habits/', include("habits.urls")),
     path('tasks/', include("tasks.urls")),
     path('google_auth/', include('google_auth.urls')),
-
     path('users/', include("users.urls")),
 ]

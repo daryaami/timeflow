@@ -30,7 +30,7 @@ ALLOWED_HOSTS = ["*"]
 
 from decouple import config
 
-REDIRECT_URI = 'http://127.0.0.1:8000/google_callback'
+REDIRECT_URI = "http://127.0.0.1:8000/google_callback"
 # GOOGLE_CLIENT_ID = (config("GOOGLE_CLIENT_ID"))
 GOOGLE_CLIENT_ID = (
     ("760635798221-km4u4ssajmptuu49e8t1p7pkriq96dl2.apps.googleusercontent.com"),
@@ -38,12 +38,17 @@ GOOGLE_CLIENT_ID = (
 GOOGLE_CLIENT_SECRET = config("GOOGLE_CLIENT_SECRET")
 AUTH_URI = "https://accounts.google.com/o/oauth2/v2/auth"
 TOKEN_URI = "https://oauth2.googleapis.com/token"
-USERINFO_ENDPOINT = 'https://www.googleapis.com/oauth2/v1/userinfo'
+USERINFO_ENDPOINT = "https://www.googleapis.com/oauth2/v1/userinfo"
 auth_provider_x509_cert_url = ("https://www.googleapis.com/oauth2/v1/certs",)
 
 GOOGLE_CLIENT_SECRETS_FILE = "credentials.json"
 
-SCOPES = ['openid', 'https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/calendar']
+SCOPES = [
+    "openid",
+    "https://www.googleapis.com/auth/userinfo.profile",
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/calendar",
+]
 
 
 SITE_ID = 1
@@ -175,4 +180,4 @@ AUTH_USER_MODEL = "users.CustomUser"
 
 # CORS_ALLOW_CREDENTIALS = True
 
-LOGIN_URL = '/login/'
+LOGIN_URL = "/auth/login/"

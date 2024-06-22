@@ -59,10 +59,8 @@ def planner(request):
     user = request.user
 
     if not GoogleCredentials.objects.filter(user=user).exists():
-        return redirect('main:register')
-    if not user.is_authenticated:
-        return redirect('main:login')
-    
+        return redirect('auth:register')
+
     user_credentials = get_and_refresh_user_credentials(user)
 
     # Получение списка подключенных календарей

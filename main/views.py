@@ -73,7 +73,8 @@ def planner(request):
 
     context = {'events': events_by_days if events_by_days else {} }
 
-    return render(request, "main/planner.html", context)
+    # return render(request, "main/planner.html", context)
+    return render(request, "index.html")
 
 
 def create_event(user_credentials, calendar_id, event_details):
@@ -95,7 +96,8 @@ def update_event(user_credentials, calendar_id, event_id, updated_event_details)
 
 
 def login_view(request):
-    return render(request, "login.html")
+    # return render(request, "login.html")
+    return render(request, "index.html")
     
 
 def google_callback(request):

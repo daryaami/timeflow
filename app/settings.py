@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -79,7 +80,7 @@ ROOT_URLCONF = "app.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [BASE_DIR / "frontend/dist"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -144,10 +145,17 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = '/static/'
+# URL для доступа к статическим файлам
+# Путь к вашей кастомной папке для статических файлов
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
+    BASE_DIR / "frontend/dist/assets",
 ]
+
+# Путь, куда будут собираться статические файлы (например, при выполнении collectstatic)
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# URL, по которому будут доступны статические файлы
+STATIC_URL = "/assets/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

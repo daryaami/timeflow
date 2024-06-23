@@ -12,7 +12,7 @@ import logoVue from '../components/icons/logo.vue'
       <h1 class="login-page__title">Welcome to TimeFlow</h1>
 
       <googleButtonVue class="login-page__button"
-        href="#"
+        href="/google_auth/register/"
         text="Connect your Google account "
       />
 

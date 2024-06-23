@@ -7,4 +7,8 @@ const app = createApp(App)
 
 app.use(router)
 
+router.afterEach((to) => {
+  document.title = to.meta.metaTitle || 'TimeFlow';
+});
+
 app.mount('#app')

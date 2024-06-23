@@ -6,6 +6,10 @@
 @import './mixins/icons.scss';
 @import './mixins/resets.scss';
 
+@view-transition {
+  navigation: auto;
+}
+
 $baseWidth: 1920px;
 
 @function size($size) {

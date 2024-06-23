@@ -10,17 +10,30 @@ const router = createRouter({
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/LogIn.vue'),
-      meta: { loginPage: true },
+      meta: { 
+        layout: 'login',
+        metaTitle: 'Log in to TimeFlow'  
+       },
     },
     {
       path: '/signup',
       name: 'signup',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/SignUp.vue'),
-      meta: { loginPage: true },
-    }
+      meta: { 
+        layout: 'login',
+        metaTitle: 'Sign up to TimeFlow'  
+      },
+    },
+    {
+      path: '/planner',
+      name: 'planner',
+      component: () => import('../views/Planner.vue'),
+      meta: { 
+        layout: 'default',
+        title: 'Planner',
+        metaTitle: 'Planner' 
+      },
+    },
   ]
 })
 

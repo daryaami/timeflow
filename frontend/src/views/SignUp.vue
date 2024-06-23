@@ -1,5 +1,5 @@
 <script setup>
-import googleButtonVue from '../components/buttons/google-button.vue'
+import googleButtonVue from '../components/blocks/buttons/google-button.vue'
 import logoVue from '../components/icons/logo.vue'
 </script>
 

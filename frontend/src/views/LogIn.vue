@@ -4,8 +4,7 @@ import logoVue from '../components/icons/logo.vue'
 </script>
 
 <template>
-  <section class="login-page">
-    <div class="login-page__wrapper">
+    <section class="login-page">
       <logoVue 
         class="login-page__logo"
       />
@@ -19,24 +18,14 @@ import logoVue from '../components/icons/logo.vue'
       <p class="login-page__text">Don't have an account? <RouterLink to="/signup/">Sign Up</RouterLink></p>
 
       <p class="login-page__privacy-text">By using TimeFlow, you agree to our <a href="javascript:void();">Terms of Service</a> and <a href="javascript:void();">Privacy Policy</a>.</p>
-    </div>
-  </section>
+    </section>
 </template>
 
 <style lang="scss">
   .login-page {
     display: flex;
-    width: 100%;
-    height: 100%;
-    background-color: $violet;
     align-items: center;
-    justify-content: center;
-
-    &__wrapper {
-      display: flex;
-      align-items: center;
-      flex-direction: column;
-    }
+    flex-direction: column;
 
     &__logo {
       display: block;

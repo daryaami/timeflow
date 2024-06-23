@@ -1,14 +1,10 @@
-<script>
+<script setup>
 import googleIcon from '@/assets/img/google-icon.png'
 
-export default {
-  props: ['href', 'text'],
-  data() {
-    return {
-      googleIcon
-    }
-  },
-}
+const props = defineProps({
+  href: String,
+  text: String,
+});
 </script>
 
 <template>

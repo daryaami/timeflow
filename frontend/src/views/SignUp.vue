@@ -4,45 +4,40 @@ import logoVue from '../components/icons/logo.vue'
 </script>
 
 <template>
-  <section class="login-page">
-    <div class="login-page__wrapper">
-      <logoVue 
-        class="login-page__logo"
-      />
-      <h1 class="login-page__title">Welcome to TimeFlow</h1>
+  <section class="sign-up-page">
+    <logoVue 
+      class="sign-up-page__logo"
+    />
+    <h1 class="sign-up-page__title">Welcome to TimeFlow</h1>
+    <span class="sign-up-page__subtitle">Try out the new planning experience</span>
 
-      <googleButtonVue class="login-page__button"
-        href="/google_auth/register/"
-        text="Connect your Google account "
-      />
+    <googleButtonVue class="sign-up-page__button"
+      href="/google_auth/register/"
+      text="Connect your Google account "
+    />
 
-      <p class="login-page__text">Have an account?&nbsp;<RouterLink to="/login/">Log in</RouterLink></p>
+    <p class="sign-up-page__text">Have an account?&nbsp;<RouterLink to="/login/">Log in</RouterLink></p>
 
-      <p class="login-page__privacy-text">By using TimeFlow, you agree to our <a href="javascript:void();">Terms of Service</a> and <a href="javascript:void();">Privacy Policy</a>.</p>
-    </div>
+    <p class="sign-up-page__privacy-text">By using TimeFlow, you agree to our <a href="javascript:void();">Terms of Service</a> and <a href="javascript:void();">Privacy Policy</a>.</p>
   </section>
 </template>
 
 <style lang="scss">
-  .login-page {
+  .sign-up-page {
     display: flex;
-    width: 100%;
-    height: 100%;
-    background-color: $violet;
     align-items: center;
-    justify-content: center;
-
-    &__wrapper {
-      display: flex;
-      align-items: center;
-      flex-direction: column;
-    }
+    flex-direction: column;
+    background-color: $white;
+    padding-top: size(96px);
+    padding-bottom: size(72px);
+    width: size(1003px);
+    border-radius: size(30px);
 
     &__logo {
       display: block;
       width: size(70px);
       height: size(70px);
-      margin-bottom: size(20px);
+      margin-bottom: size(19px);
     }
 
     &__title {
@@ -50,17 +45,26 @@ import logoVue from '../components/icons/logo.vue'
       font-size: size(50px);
       line-height: 100%;
       text-align: center;
-      color: $white;
+      color: $darkest;
       margin-top: 0;
-      margin-bottom: size(88px);
+      margin-bottom: size(8px);
+    }
+
+    &__subtitle {
+      font-weight: 250;
+      font-size: size(30px);
+      text-align: center;
+      color: $darkest;
+      margin-top: 0;
+      margin-bottom: size(35px);
     }
 
     &__button {
-      margin-bottom: size(44px);
+      margin-bottom: size(23px);
     }
 
     &__text {
-      color: $white;
+      color: $dark-grey;
       font-weight: 400;
       font-size: size(20px);
       line-height: 100%;
@@ -76,7 +80,7 @@ import logoVue from '../components/icons/logo.vue'
     &__privacy-text {
       font-weight: 300;
       font-size: size(20px);
-      color: $dark-lines;
+      color: $light-grey;
       margin: 0;
 
       & a {

@@ -54,8 +54,6 @@ def google_oauth(request):
     flow.fetch_token(authorization_response=authorization_response)
     credentials = flow.credentials
 
-    return JsonResponse({"creds": credentials})
-
     # Использование userinfo endpoint для получения информации о пользователе - вынести в функцию
     params = {'alt': 'json', 'access_token': credentials.token}
     response = requests.get(settings.USERINFO_ENDPOINT, params=params)
@@ -67,8 +65,9 @@ def google_oauth(request):
         user = CustomUser.objects.get(email=email)
         user_credentials = GoogleCredentials.objects.filter(user=user).first()
 
-        if user_credentials and user_credentials.refresh_token:
-            if user_credentials.access_token_expiry and user_credentials.access_token_expiry > timezone.now():
+        if user_credentials.refresh_token:
+            
+            if user_credentials.access_token_expiry > timezone.now():
                 # Access token is still valid, log in the user and redirect to planner
                 login(request, user)
                 return redirect('planner:index')
@@ -91,7 +90,6 @@ def google_oauth(request):
                 # Log in the user and redirect to planner
                 login(request, user)
                 return redirect('planner:index')
-            
         else:
             redirect("auth:register")
 

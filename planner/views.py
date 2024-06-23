@@ -11,8 +11,11 @@ from app import settings
 scopes = settings.SCOPES
 
 # Create your views here.
-@login_required
+# @login_required
 def index(request):
+    return render(request, "index.html")
+
+def get_events(request):
     user = request.user
 
     if not GoogleCredentials.objects.filter(user=user).exists():
@@ -31,7 +34,6 @@ def index(request):
     context = {'events': events_by_days if events_by_days else {} }
 
     return render(request, "main/planner.html", context)
-    # return render(request, "index.html")
 
 
 @login_required

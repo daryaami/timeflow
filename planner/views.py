@@ -11,10 +11,11 @@ from app import settings
 scopes = settings.SCOPES
 
 # Create your views here.
-# @login_required
+@login_required
 def index(request):
     return render(request, "index.html")
 
+@login_required
 def get_events(request):
     user = request.user
 

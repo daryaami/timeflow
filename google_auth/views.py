@@ -54,6 +54,8 @@ def google_oauth(request):
     flow.fetch_token(authorization_response=authorization_response)
     credentials = flow.credentials
 
+    return JsonResponse({"creds": credentials})
+
     # Использование userinfo endpoint для получения информации о пользователе - вынести в функцию
     params = {'alt': 'json', 'access_token': credentials.token}
     response = requests.get(settings.USERINFO_ENDPOINT, params=params)

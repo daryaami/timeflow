@@ -1,6 +1,7 @@
 from django.db import models
 from datetime import date, timedelta
-from users.models import CustomUser
+from users.models import CustomUser, UserCalendar
+from planner.models import Hours
 
 
 # Create your models here.
@@ -20,13 +21,12 @@ class Task(models.Model):
     max_duration = models.IntegerField(default=0)
     due_date = models.DateField(blank=True)
     schedule_after = models.DateField(default=date.today)
-    # hours_category = models.
     # private = models.BooleanField(default=True)
-    visibility = models.CharField(
-        max_length=200, default="Busy"
-    )  # Что показывается в календаре для других людей
+    visibility = models.CharField(max_length=200, default="Busy")  # Что показывается в календаре для других людей
     notes = models.TextField(blank=True)
+
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='tasks', null=True)
+    hours = models.ForeignKey(Hours, on_delete=models.SET_NULL, related_name='tasks', null=True, default=None)
 
     def __str__(self):
         return "%s (id %s)" % (self.name, self.pk)

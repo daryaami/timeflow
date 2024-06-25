@@ -1,0 +1,60 @@
+{
+    "kind": "calendar#event",
+    "etag": "\"3438428480428000\"",
+    "id": "e9im6r31d5miqobjedkn6t1dcdqn6t3fdkmm8ob9dhsjkthi78p32cpo68rjiehi60p38b9g6omj4d1qchgn4ub1c5mmic9g81jmqob9dgn66rrd79242iacb5fkgga295a0",
+    "status": "confirmed",
+    "htmlLink": "https://www.google.com/calendar/event?eid=ZTlpbTZyMzFkNW1pcW9iamVka242dDFkY2RxbjZ0M2Zka21tOG9iOWRoc2prdGhpNzhwMzJjcG82OHJqaWVoaTYwcDM4YjlnNm9tajRkMXFjaGduNHViMWM1bW1pYzlnODFqbXFvYjlkZ242NnJyZDc5MjQyaWFjYjVma2dnYTI5NWEwIGRhcnlhYW1pMTBAbQ",
+    "created": "2024-06-03T06:05:12.000Z",
+    "updated": "2024-06-24T07:30:40.214Z",
+    "summary": "Summary",
+    "description": "<i>This event was created by <a href=\"https://app.reclaim.ai/landing/about?name=Darya+Mitryashkina&utm_source=calendar&utm_campaign=calendar-referral&utm_medium=habit-event&utm_term=xtUPe\">Reclaim</a>.</i><p>This Habit is now marked as done in Reclaim. You can reschedule it to later in the day if you didn't do the Habit, or delete the event if you want to skip it for the day.</p>",
+    "colorId": "1",
+    "creator": {
+        "email": "daryaami10@gmail.com",
+        "self": true
+    },
+    "organizer": {
+        "email": "daryaami10@gmail.com",
+        "self": true
+    },
+    "start": {
+        "dateTime": "2024-06-24T09:00:00+03:00",
+        "timeZone": "Europe/Moscow"
+    },
+    "end": {
+        "dateTime": "2024-06-24T10:30:00+03:00",
+        "timeZone": "Europe/Moscow"
+    },
+    "visibility": "public",
+    "iCalUID": "e9im6r31d5miqobjedkn6t1dcdqn6t3fdkmm8ob9dhsjkthi78p32cpo68rjiehi60p38b9g6omj4d1qchgn4ub1c5mmic9g81jmqob9dgn66rrd79242iacb5fkgga295a0@google.com",
+    "sequence": 0,
+    "extendedProperties": {
+        "private": {
+            "reclaim.event.type": "WORK",
+            "reclaim.event.priority": "P2",
+            "reclaim.controlHash": "288986878",
+            "reclaim.event.subType": "FOCUS",
+            "reclaim.meeting.type": "NULL",
+            "reclaim.colorHash": "49",
+            "reclaim.descriptionHash": "-2032938786",
+            "reclaim.locationHash": "0",
+            "reclaim.touched": "true",
+            "reclaim.assist": "true",
+            "reclaim.summaryHash": "675614556",
+            "reclaim.priority.index": "NULL",
+            "reclaim.event.priority_source": "MANUAL"
+        },
+        "shared": {
+            "reclaim.busy": "true",
+            "reclaim.event.lockState": "IN_THE_PAST"
+        }
+    },
+    "reminders": {
+        "useDefault": false
+    },
+    "source": {
+        "url": "https://app.reclaim.ai/habits/2138279",
+        "title": "Reclaim Habit"
+    },
+    "eventType": "default"
+}

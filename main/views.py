@@ -36,4 +36,4 @@ def google_callback(request):
         url_with_params = f"{google_callback_url}?{urlencode(params)}"
         return HttpResponseRedirect(url_with_params)
     
-    return render(request, 'index.html', status=404)
+    return redirect(reverse("main:index"))

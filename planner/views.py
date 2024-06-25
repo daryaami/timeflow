@@ -18,10 +18,6 @@ def index(request):
 @login_required
 def get_events(request):
     user = request.user
-
-    if not GoogleCredentials.objects.filter(user=user).exists():
-        return redirect('auth:register')
-
     user_credentials = get_and_refresh_user_credentials(user)
 
     # Получение списка подключенных календарей
@@ -34,7 +30,9 @@ def get_events(request):
 
     context = {'events': events_by_days if events_by_days else {} }
 
-    return render(request, "main/planner.html", context)
+    return JsonResponse(events_by_days)
+
+    # return render(request, "planner/planner.html", context)
 
 
 @login_required
@@ -45,7 +43,7 @@ def create_event(user_credentials, calendar_id, event_details):
         return event
     except Exception as e:
         return e
-    
+
 
 @login_required
 def update_event(user_credentials, calendar_id, event_id, updated_event_details):
@@ -55,3 +53,6 @@ def update_event(user_credentials, calendar_id, event_id, updated_event_details)
         return event
     except Exception as e:
         return e
+    
+
+

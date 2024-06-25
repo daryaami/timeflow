@@ -1,6 +1,7 @@
 from django.db import models
 from datetime import time, date
 from users.models import CustomUser
+from planner.models import Hours
 
 # Create your models here.
 class Habit(models.Model):
@@ -22,8 +23,8 @@ class Habit(models.Model):
         ('weekly', 'Weekly'), 
         ('monthly', 'Monthly')
     ]
-
-    # DEFAULT_SCHEDULE = {"period": ('weekly', 'Weekly'), "times": "1"}
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='habits', null=True)
+    hours = models.ForeignKey(Hours, on_delete=models.SET_NULL, related_name='habits', null=True, default=None)
 
     name = models.CharField(max_length=255)
     priority = models.CharField(choices=PRIORITY_CHOICES, default='high', max_length=20)
@@ -39,11 +40,8 @@ class Habit(models.Model):
     # private = models.BooleanField(default=True) # Приватность отображения в календаре для других
     visibility = models.CharField(max_length=200, default='Busy') # Что показывается в календаре для других людей
     notes = models.TextField(blank=True)
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='habits', null=True)
+    custom_hours = models.JSONField(null=True, blank=True)  # Пример: {"Tuesday": [{"start": "10:00", "end": "11:00"}]}
     
-    # hours_category = 
-    # hours = 
-
     def __str__(self):
         return "%s (id %s)" % (self.name, self.pk)
 

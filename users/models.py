@@ -72,6 +72,6 @@ class UserCalendar(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     calendar_id = models.CharField(max_length=255)
     summary = models.CharField(max_length=255)
-
+    
     class Meta:
         db_table = "user_calendars"

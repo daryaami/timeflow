@@ -13,6 +13,11 @@ media/
 .env
 credentials.json
 
+habits/migrations/0001_initial.py
+planner/migrations/0001_initial.py
+tasks/migrations/0001_initial.py
+users/migrations/0001_initial.py
+
 
 # Logs
 frontend/logs

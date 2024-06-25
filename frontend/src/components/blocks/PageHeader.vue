@@ -10,7 +10,7 @@ const props = defineProps({
 
 <template>
   <div class="page-header">
-    <h1>{{ title }}</h1>
+    <!-- <h1>{{ title }}</h1> -->
     <button class="page-header__add-task">+ New Task</button>
     <search-block />
   </div>

@@ -12,6 +12,7 @@ const route = useRoute()
       <PageHeaderVue 
         :title="route.meta.title"
       />
+      <RouterView  />
     </div>
   </div>
 </template>

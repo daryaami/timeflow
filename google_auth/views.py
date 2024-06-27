@@ -16,7 +16,7 @@ os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 scopes = settings.SCOPES
 
 
-def login_view(request):
+def log_in(request):
     flow = Flow.from_client_secrets_file(
         settings.GOOGLE_CLIENT_SECRETS_FILE, scopes=scopes)
     flow.redirect_uri = settings.REDIRECT_URI
@@ -70,7 +70,7 @@ def google_oauth(request):
             if user_credentials.access_token_expiry > timezone.now():
                 # Access token is still valid, log in the user and redirect to planner
                 login(request, user)
-                return redirect('planner:index')
+                return redirect('main:planner')
             else:
                 # Refresh the access token
                 refresh_request = requests.post(
@@ -89,7 +89,7 @@ def google_oauth(request):
 
                 # Log in the user and redirect to planner
                 login(request, user)
-                return redirect('planner:index')
+                return redirect('main:planner')
         else:
             redirect("auth:register")
 
@@ -131,4 +131,4 @@ def google_oauth(request):
         UserCalendar.objects.update_or_create(user=user, calendar_id=calendar['id'], defaults={'summary': calendar['summary']})
 
     login(request, user)
-    return redirect('planner:index')
+    return redirect('main:planner')

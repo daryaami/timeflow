@@ -4,7 +4,7 @@ from . import views
 app_name = 'auth'
 
 urlpatterns = [
-    path("login/", views.login_view, name='login'),
+    path("login/", views.log_in, name='log_in'),
     path("register/", views.register, name='register'),
     path("google_oauth/", views.google_oauth, name='google_oauth'),
 ]

@@ -25,4 +25,4 @@ def get_and_refresh_user_credentials(user):
         return credentials
         
     else:
-        return ValueError()
+        return ValueError("User credentials not found or refresh token missing.")

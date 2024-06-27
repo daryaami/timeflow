@@ -20,9 +20,9 @@ from django.urls import path, include
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('', include("main.urls")),
-    path('planner/', include("planner.urls")),
-    path('habits/', include("habits.urls")),
-    path('tasks/', include("tasks.urls")),
-    path('google_auth/', include('google_auth.urls')),
-    path('users/', include("users.urls")),
+    path('habit_api/', include("habits.urls")),
+    path('planner_api/', include("planner.urls")),
+    path('task_api/', include("tasks.urls")),
+    path('google_auth_api/', include('google_auth.urls')),
+    path('user_api/', include("users.urls")),
 ]

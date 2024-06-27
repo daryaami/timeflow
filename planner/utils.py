@@ -5,6 +5,8 @@ from datetime import date, datetime, timedelta
 from googleapiclient.discovery import build
 
 from users.models import GoogleCredentials, UserCalendar
+import aiohttp
+import concurrent.futures
 
 
 def get_user_calendars(user):
@@ -31,6 +33,10 @@ def get_calendar_events(user_credentials, calendar_id, start_time, end_time):
         return []
 
 
+def fetch_calendar_events(user_credentials, calendar_id, start_time, end_time):
+    return get_calendar_events(user_credentials, calendar_id, start_time, end_time)
+
+
 def get_all_events_by_weekday(date_param, user_calendars, user_credentials):
     if date_param:
         calendar_date = datetime.strptime(date_param, "%Y-%m-%d").date()
@@ -44,10 +50,14 @@ def get_all_events_by_weekday(date_param, user_calendars, user_credentials):
     events_by_weekday = {day: {"date": (start_of_week + timedelta(days=i)).strftime("%d.%m.%Y"), "events": []} for i, day in enumerate(days_of_week)}
 
     all_events = []
-    for calendar in user_calendars:
-        calendar_id = calendar.calendar_id
-        events = get_calendar_events(user_credentials, calendar_id, start_of_week, end_of_week)
-        all_events.extend(events)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = [
+            executor.submit(fetch_calendar_events, user_credentials, calendar.calendar_id, start_of_week, end_of_week)
+            for calendar in user_calendars
+        ]
+        for future in concurrent.futures.as_completed(futures):
+            events = future.result()
+            all_events.extend(events)
 
     for event in all_events:
         event_start = event['start'].get('dateTime', event['start'].get('date'))

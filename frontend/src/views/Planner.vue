@@ -7,7 +7,7 @@ const events = ref();
 const isLoading = ref(true);
 
 const fetchData = async () => {
-  let response = await fetch(`${window.location.origin}/planner/get_events/`);
+  let response = await fetch(`${window.location.origin}/planner_api/get_events/`);
 
   if (response.ok) {
     let json = await response.json();

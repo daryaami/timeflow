@@ -12,10 +12,13 @@ scopes = settings.SCOPES
 def index(request):
     user = request.user
 
+    if not user:
+        return redirect('main:signup')
+    
     if not user.is_authenticated:
         return redirect('main:login')
     
-    return redirect("planner:index")
+    return redirect("main:planner")
 
 
 def login_view(request):
@@ -26,6 +29,9 @@ def login_view(request):
 def signup_view(request):
     return render(request, "index.html")
     
+
+def planner(request):
+    return render(request, "index.html")
 
 
 def google_callback(request):

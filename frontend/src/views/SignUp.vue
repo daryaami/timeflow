@@ -12,7 +12,7 @@ import logoVue from '../components/icons/logo.vue'
     <span class="sign-up-page__subtitle">Try out the new planning experience</span>
 
     <googleButtonVue class="sign-up-page__button"
-      href="/google_auth/register/"
+      href="/google_auth_api/register/"
       text="Connect your Google account "
     />
 

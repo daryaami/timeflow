@@ -27,9 +27,9 @@ const route = useRoute()
    &__main {
     flex-basis: 100%;
     flex-shrink: 1;
-    display: flex;
-    flex-direction: column;
     height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr;
   }
 }
 </style>

@@ -2,6 +2,8 @@
 import { ref, onMounted } from 'vue';
 import PlannerHeaderVue from '../components/blocks/planner/PlannerHeader.vue';
 import LoaderVue from '../components/blocks/Loader.vue';
+import EventCardVue from '../components/blocks/planner/EventCard.vue';
+
 
 const events = ref();
 const isLoading = ref(true);
@@ -23,6 +25,102 @@ try {
 } catch (error) {
   console.log('ошибка')
 }
+
+
+const lines = [
+  {
+    time: '01:00',
+    percent: 100 / 24,
+  },
+  {
+    time: '02:00',
+    percent: 200 / 24,
+  },
+  {
+    time: '03:00',
+    percent: 300 / 24,
+  },
+  {
+    time: '04:00',
+    percent: 400 / 24,
+  },
+  {
+    time: '05:00',
+    percent: 500 / 24,
+  },
+  {
+    time: '06:00',
+    percent: 600 / 24,
+  },
+  {
+    time: '07:00',
+    percent: 700 / 24,
+  },
+  {
+    time: '08:00',
+    percent: 800 / 24,
+  },
+  {
+    time: '09:00',
+    percent: 900 / 24,
+  },
+  {
+    time: '10:00',
+    percent: 1000 / 24,
+  },
+  {
+    time: '11:00',
+    percent: 1100 / 24,
+  },
+  {
+    time: '12:00',
+    percent: 1200 / 24,
+  },
+  {
+    time: '13:00',
+    percent: 1300 / 24,
+  },
+  {
+    time: '14:00',
+    percent: 1400 / 24,
+  },
+  {
+    time: '15:00',
+    percent: 1500 / 24,
+  },
+  {
+    time: '16:00',
+    percent: 1600 / 24,
+  },
+  {
+    time: '17:00',
+    percent: 1700 / 24,
+  },
+  {
+    time: '18:00',
+    percent: 1800 / 24,
+  },
+  {
+    time: '19:00',
+    percent: 1900 / 24,
+  },
+  {
+    time: '20:00',
+    percent: 2000 / 24,
+  },
+  {
+    time: '21:00',
+    percent: 2100 / 24,
+  },
+  {
+    time: '22:00',
+    percent: 2200 / 24,
+  },
+  {
+    time: '23:00',
+    percent: 2300 / 24,
+  },
+]
 </script>
 
 <template>
@@ -31,20 +129,31 @@ try {
     <div class="planner__loader-wrapper" v-if="isLoading">
       <LoaderVue />
     </div>
-    <div class="planner__grid" v-if="!isLoading">
-      <div 
-        v-for="day in events"
-        :key="day.date"  
-      >
-        <h3>{{ day.date }}</h3>
-        <ul v-if="day.events">
-          <li 
+    <div class="planner__grid-wrapper" v-if="!isLoading">
+      <div class="planner__days-header">
+        <span class="planner__date"
+          v-for="day in events"
+          :key="day.date"  
+        >{{ day.date }}</span> 
+      </div>
+      <div class="planner__grid">
+        <div class="planner__day-column"
+          v-for="day in events"
+          :key="day.date"  
+        >
+          <EventCardVue 
             v-for="event, i in day.events"
             :key="i"
-          >
-            {{ event.summary }}
-          </li>
-        </ul>
+            :event="event"
+          />
+        </div>
+        <div class="planner__line"
+          v-for="(line, i) in lines"
+          :key="i"
+          :style="{ top: `${line.percent}%` }"
+        >
+          <div class="planner__line-time">{{ line.time }}</div>
+        </div>
       </div>
     </div>
     
@@ -55,9 +164,10 @@ try {
 
 <style lang="scss">
   .planner {
-    display: flex;
-    flex-direction: column;
     height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    overflow: hidden;
 
     &__loader-wrapper {
       display: flex;
@@ -67,9 +177,63 @@ try {
       height: 100%;
     }
 
+    &__grid-wrapper {
+      padding-left: size(79px);
+      height: 100%;
+      position: relative;
+      overflow-y: scroll;
+    }
+
     &__grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
+      height: size($day-height);
+      position: relative;
+    }
+
+    &__day-column {
+      border-left: 1px solid $dark-lines;
+      height: 100%;
+      position: relative;
+    }
+
+    &__days-header {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      position: sticky;
+      top: 0;
+      left: 0;
+      z-index: 100;
+    }
+
+    &__date {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: size(32px);
+      font-weight: 400;
+      font-size: size(18px);
+      background-color: $white;
+    }
+
+    &__line {
+      position: absolute;
+      left: size(-7px);
+      width: calc(100% + size(7px));
+      height: 1px;
+      background-color: $light-lines;
+    }
+
+    &__line-time {
+      position: absolute;
+      left: size(-10px);
+      top: 0;
+      transform: translate(-100%, -100%);
+      font-weight: 400;
+      font-size: size(16px);
+      line-height: 100%;
+      color: $light-grey;
     }
   }
 </style>

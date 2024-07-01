@@ -8,15 +8,29 @@ const getMinutes = (timeString) => {
   return date.getMinutes();
 }
 
-const getDecimalHours = (timeString) => {
-  let date = new Date(timeString);
+const getDecimalHours = (time) => {
+  let date;
+
+  if (typeof time === 'string') {
+    date = new Date(time);
+  } else {
+    date = time
+  }
+
   let localHours = date.getHours();
   let minutes = date.getMinutes();
   return localHours + minutes / 60;
 }
 
-const getStringTime = (timeString) => {
-  const date = new Date(timeString);
+const getStringTime = (time) => {
+  let date;
+
+  if (typeof time === 'string') {
+    date = new Date(time);
+  } else {
+    date = time
+  }
+
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
   return `${hours}:${minutes}`;

@@ -1,30 +1,65 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import PlannerHeaderVue from '../components/blocks/planner/PlannerHeader.vue';
 import LoaderVue from '../components/blocks/Loader.vue';
 import EventCardVue from '../components/blocks/planner/EventCard.vue';
+import { getEvents } from '@/components/js/getEvents';
+import { getStringTime, getDecimalHours } from '@/components/js/time-utils';
 
 
-const events = ref();
+// Current time line 
+
+const timeLineEl = ref(null)
+
+const nowTimeLine = ref({
+  caption: '',
+  styleTop: '',
+})
+
+const updateTimeLine = () => {
+  const now = new Date();
+
+  nowTimeLine.value.caption = getStringTime(now);
+  nowTimeLine.value.styleTop = `${getDecimalHours(now) * 100 / 24}%`
+}
+
+const setTimeLineUpdate =  async () => {
+  updateTimeLine();
+
+  await nextTick();
+
+  timeLineEl.value.scrollIntoView({ block: "center" });
+
+  const now = new Date();
+  const nextMinute = (60 - now.getSeconds()) * 1000;
+
+  setTimeout(() => {
+    updateTimeLine();
+    setInterval(updateTimeLine, 60000);
+  }, nextMinute)
+}
+
+
+// Get events
+
+const events = ref([]);
 const isLoading = ref(true);
 
 const fetchData = async () => {
-  let response = await fetch(`${window.location.origin}/planner_api/get_events/`);
-
-  if (response.ok) {
-    let json = await response.json();
-    events.value = json.days;
+  try {
+    events.value = await getEvents();
+  } catch (error) {
+    console.error('ошибка', error);
+  } finally {
     isLoading.value = false;
-  } else {
-    throw new Error()
+    setTimeLineUpdate();
   }
 }
 
-try {
-  fetchData()
-} catch (error) {
-  console.log('ошибка')
-}
+onMounted(() => {
+  fetchData();
+})
+
 
 
 const lines = [
@@ -154,6 +189,13 @@ const lines = [
         >
           <div class="planner__line-time">{{ line.time }}</div>
         </div>
+
+        <div class="planner__line planner__line--now"
+          :style="{ top: `${nowTimeLine.styleTop}` }"
+          ref="timeLineEl"
+        >
+          <div class="planner__line-time">{{ nowTimeLine.caption }}</div>
+        </div>
       </div>
     </div>
     
@@ -223,6 +265,14 @@ const lines = [
       width: calc(100% + size(7px));
       height: 1px;
       background-color: $light-lines;
+
+      &--now {
+        background-color: $light-grey;
+
+        & .planner__line-time {
+          color: $basic-dark;
+        }
+      }
     }
 
     &__line-time {
@@ -234,6 +284,7 @@ const lines = [
       font-size: size(16px);
       line-height: 100%;
       color: $light-grey;
+      background: $white;
     }
   }
 </style>

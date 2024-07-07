@@ -5,6 +5,7 @@ import LoaderVue from '../components/blocks/Loader.vue';
 import EventCardVue from '../components/blocks/planner/EventCard.vue';
 import { getEvents } from '@/components/js/getEvents';
 import { getStringTime, getDecimalHours } from '@/components/js/time-utils';
+import PlannerDateVue from '../components/blocks/planner/PlannerDate.vue';
 
 
 // Current time line 
@@ -166,10 +167,11 @@ const lines = [
     </div>
     <div class="planner__grid-wrapper" v-if="!isLoading">
       <div class="planner__days-header">
-        <span class="planner__date"
+        <PlannerDateVue 
           v-for="day in events"
-          :key="day.date"  
-        >{{ day.date }}</span> 
+          :key="day.date" 
+          :date="day.date"
+        />
       </div>
       <div class="planner__grid">
         <div class="planner__day-column"
@@ -246,16 +248,6 @@ const lines = [
       top: 0;
       left: 0;
       z-index: 100;
-    }
-
-    &__date {
-      @include bold-18;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      height: size(32px);
-      background-color: $white;
     }
 
     &__line {

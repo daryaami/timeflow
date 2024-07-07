@@ -39,17 +39,13 @@ const time = computed(() => `${getStringTime(props.event.start.dateTime)} - ${ge
   left: 0;
 
   &__name {
-    font-weight: 400;
-    font-size: size(14px);
-    line-height: 100%;
+    @include small-bold;
     margin-bottom: size(4px);
     display: block;
   }
 
   &__time {
-    font-weight: 300;
-    font-size: size(14px);
-    line-height: 100%;
+    @include small-light;
     color: $white;
   }
 }

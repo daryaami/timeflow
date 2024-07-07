@@ -35,9 +35,8 @@ body {
   padding: 0;
   height: 100%;
   width: 100%;
-  font-family: 'Lexend Exa', Arial, sans-serif;
   font-weight: 300;
-  @include text;
+  font-family: $main-font;
 }
 
 a {

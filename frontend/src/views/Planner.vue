@@ -249,13 +249,12 @@ const lines = [
     }
 
     &__date {
+      @include bold-18;
       display: flex;
       align-items: center;
       justify-content: center;
       width: 100%;
       height: size(32px);
-      font-weight: 400;
-      font-size: size(18px);
       background-color: $white;
     }
 
@@ -276,13 +275,11 @@ const lines = [
     }
 
     &__line-time {
+      @include bold-16;
       position: absolute;
       left: size(-10px);
       top: 0;
       transform: translate(-100%, -100%);
-      font-weight: 400;
-      font-size: size(16px);
-      line-height: 100%;
       color: $light-grey;
       background: $white;
     }

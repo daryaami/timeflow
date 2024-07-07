@@ -1,7 +1,7 @@
 @mixin reset-button {
+  font-family: $main-font;
   border: none;
   background: transparent;
   padding: 0;
-  @include subtitle;
   cursor: pointer;
 }

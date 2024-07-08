@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Habit</title>
+</head>
+<body>
+    <h2>Create a New Habit</h2>
+    <form method="post" action="/habits_api/create_habit">
+        {% csrf_token %}
+        <label for="id_name">Name:</label><br>
+        <input type="text" id="id_name" name="name" required><br>
+
+        <label for="id_priority">Priority:</label><br>
+        <select id="id_priority" name="priority">
+            <option value="critical">Critical</option>
+            <option value="high" selected>High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+        </select><br>
+
+        <label for="id_min_duration">Minimum Duration (minutes):</label><br>
+        <input type="number" id="id_min_duration" name="min_duration" value="30" required><br>
+
+        <label for="id_max_duration">Maximum Duration (minutes):</label><br>
+        <input type="number" id="id_max_duration" name="max_duration" value="60" required><br>
+
+        <label for="id_category">Category:</label><br>
+        <select id="id_category" name="category">
+            <option value="personal" selected>Personal</option>
+            <option value="work">Work</option>
+        </select><br>
+
+        <label for="id_period">Period:</label><br>
+        <select id="id_period" name="period">
+            <option value="every day">Every day</option>
+            <option value="weekly" selected>Weekly</option>
+            <option value="monthly">Monthly</option>
+        </select><br>
+
+        <label for="id_times_per_period">Times per Period:</label><br>
+        <input type="number" id="id_times_per_period" name="times_per_period" value="1" required><br>
+        
+        <label for="id_ideal_time">Ideal Time:</label><br>
+        <input type="time" id="id_ideal_time" name="ideal_time" value="08:00" required><br>
+
+        <label for="id_starting">Starting Date:</label><br>
+        <input type="date" id="id_starting" name="starting" value="{{ today|date:'Y-m-d' }}" required><br>
+
+        <label for="id_ending">Ending Date (optional):</label><br>
+        <input type="date" id="id_ending" name="ending"><br>
+
+        <label for="id_visibility">Visibility:</label><br>
+        <input type="text" id="id_visibility" name="visibility" value="Busy" required><br>
+
+        <label for="id_notes">Notes:</label><br>
+        <textarea id="id_notes" name="notes"></textarea><br>
+
+        <label for="id_custom_hours">Custom Hours (optional):</label><br>
+        <textarea id="id_custom_hours" name="custom_hours"></textarea><br>
+
+        <button type="submit">Create Habit</button>
+    </form>
+</body>
+</html>

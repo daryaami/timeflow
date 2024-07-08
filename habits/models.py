@@ -33,7 +33,7 @@ class Habit(models.Model):
     category = models.CharField(choices=CATEGORY_CHOICES, default='personal', max_length=20)
     period = models.CharField(choices=PERIOD_CHOICES, default='weekly', max_length=20)
     times_per_period = models.SmallIntegerField(default=1)
-    ideal_days = models.JSONField(blank=True, null=True)
+    # ideal_days = models.JSONField(blank=True, null=True)
     ideal_time = models.TimeField(default=time(8, 0))
     starting = models.DateField(default=date.today) # Дата начала 
     ending = models.DateField(blank=True, null=True) # Дата окончания

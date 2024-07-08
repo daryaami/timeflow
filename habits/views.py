@@ -10,7 +10,9 @@ from .models import Habit
 # Create your views here.
 @login_required
 def index(request):
-    return render(request, "index.html")
+    # return render(request, "index.html")
+    return render(request, "habits\create.html")
+
 
 @login_required
 def get_habits(request):
@@ -28,7 +30,6 @@ def get_habits(request):
                 "category": habit.category,
                 "period": habit.period,
                 "times_per_period": habit.times_per_period,
-                "ideal_days": habit.ideal_days,
                 "ideal_time": habit.ideal_time,
                 "starting": habit.starting,
                 "ending": habit.ending,
@@ -54,7 +55,6 @@ def get_habit_by_id(request, id):
             "category": habit.category,
             "period": habit.period,
             "times_per_period": habit.times_per_period,
-            "ideal_days": habit.ideal_days,
             "ideal_time": habit.ideal_time,
             "starting": habit.starting,
             "ending": habit.ending,
@@ -81,7 +81,6 @@ def add_habit(request):
         category = data.get('category', 'personal')
         period = data.get('period', 'weekly')
         times_per_period = data.get('times_per_period', 1)
-        ideal_days = data.get('ideal_days', [])
         ideal_time = data.get('ideal_time', '08:00')
         starting = parse_date(data.get('starting', str(date.today())))
         ending = data.get('ending', None)
@@ -100,7 +99,6 @@ def add_habit(request):
             category=category,
             period=period,
             times_per_period=times_per_period,
-            ideal_days=ideal_days,
             ideal_time=datetime.strptime(ideal_time, '%H:%M').time(),
             starting=starting,
             ending=ending,
@@ -117,7 +115,6 @@ def add_habit(request):
             'category': habit.category,
             'period': habit.period,
             'times_per_period': habit.times_per_period,
-            'ideal_days': habit.ideal_days,
             'ideal_time': habit.ideal_time,
             'starting': habit.starting.isoformat(),
             'ending': habit.ending.isoformat() if habit.ending else None,

@@ -10,37 +10,90 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 
 from users.models import GoogleCredentials, UserCalendar, CustomUser
+from utils import get_and_refresh_user_credentials
 
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 scopes = settings.SCOPES
 
 
-def log_in(request):
+def _create_flow(state=None):
     flow = Flow.from_client_secrets_file(
-        settings.GOOGLE_CLIENT_SECRETS_FILE, scopes=scopes)
+        settings.GOOGLE_CLIENT_SECRETS_FILE, scopes=scopes, state=state)
     flow.redirect_uri = settings.REDIRECT_URI
+    return flow
+
+
+def log_in(request):
+    flow = _create_flow()
 
     authorization_url, state = flow.authorization_url(
         access_type='offline',
     )
 
     request.session['state'] = state
+    request.session['type'] = 'login'
     return redirect(authorization_url)
 
 
 def register(request):
-        flow = Flow.from_client_secrets_file(
-        settings.GOOGLE_CLIENT_SECRETS_FILE, scopes=scopes)
-        flow.redirect_uri = settings.REDIRECT_URI
+    flow = flow = _create_flow()
 
-        authorization_url, state = flow.authorization_url(
-            access_type='offline',
-            prompt='consent',
-        )
+    authorization_url, state = flow.authorization_url(
+        access_type='offline',
+        prompt='consent',
+    )
 
-        request.session['state'] = state
-        return redirect(authorization_url)
+    request.session['state'] = state
+    request.session['type'] = 'register'
+    return redirect(authorization_url)
+
+
+def refresh_permissions(request):
+    flow = _create_flow()
+
+    authorization_url, state = flow.authorization_url(
+        access_type='offline',
+        prompt='consent',
+    )
+
+    request.session['state'] = state
+    request.session['type'] = 'refresh_permissions'
+    return redirect(authorization_url)
+
+
+def refresh_permissions_callback(request):
+    state = request.session['state']
+    authorization_response = request.get_full_path()
+
+    flow = flow = _create_flow(state=state)
+
+    flow.fetch_token(authorization_response=authorization_response)
+    credentials = flow.credentials
+
+    # Использование userinfo endpoint для получения информации о пользователе - вынести в функцию
+    params = {'alt': 'json', 'access_token': credentials.token}
+    response = requests.get(settings.USERINFO_ENDPOINT, params=params)
+    user_info = response.json()
+
+    email = user_info['email']
+
+    try:
+        user = CustomUser.objects.get(email=email)
+
+        GoogleCredentials.objects.update_or_create(user=user, defaults={
+        'access_token': credentials.token,
+        'refresh_token': credentials.refresh_token,
+        'token_uri': credentials.token_uri,
+        'client_id': credentials.client_id,
+        'client_secret': credentials.client_secret,
+        'scopes': ','.join(credentials.scopes),
+        'access_token_expiry': credentials.expiry
+    })
+
+    except Exception as e:
+        return e
+
 
 
 def google_oauth(request):
@@ -63,33 +116,13 @@ def google_oauth(request):
 
     try:
         user = CustomUser.objects.get(email=email)
-        user_credentials = GoogleCredentials.objects.filter(user=user).first()
 
-        if user_credentials.refresh_token:
-            
-            if user_credentials.access_token_expiry > timezone.now():
-                # Access token is still valid, log in the user and redirect to planner
-                login(request, user)
-                return redirect('main:planner')
-            else:
-                # Refresh the access token
-                refresh_request = requests.post(
-                    settings.TOKEN_URI,
-                    data={
-                        'client_id': user_credentials.client_id,
-                        'client_secret': user_credentials.client_secret,
-                        'refresh_token': user_credentials.refresh_token,
-                        'grant_type': 'refresh_token',
-                    },
-                )
-                new_credentials = refresh_request.json()
-                user_credentials.access_token = new_credentials['access_token']
-                user_credentials.access_token_expiry = timezone.now() + timedelta(seconds=new_credentials['expires_in'])
-                user_credentials.save()
+        user_credentials = get_and_refresh_user_credentials(user)
 
-                # Log in the user and redirect to planner
-                login(request, user)
-                return redirect('main:planner')
+        if user_credentials:
+            # Log in the user and redirect to planner
+            login(request, user)
+            return redirect('main:planner')
         else:
             redirect("auth:register")
 

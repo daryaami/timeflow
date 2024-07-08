@@ -23,9 +23,10 @@ def get_events(request):
     try:
         # Получение пользовательских учетных данных
         user_credentials = get_and_refresh_user_credentials(user)
-
         # Получение списка подключенных календарей
         user_calendars = get_user_calendars(user)
+
+        print("creds:", user_credentials)
 
         # Получение даты из параметров запроса
         if user_calendars:

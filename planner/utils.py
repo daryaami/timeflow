@@ -5,8 +5,9 @@ from datetime import date, datetime, timedelta
 from googleapiclient.discovery import build
 
 from users.models import GoogleCredentials, UserCalendar
-import aiohttp
 import concurrent.futures
+from utils import get_and_refresh_user_credentials
+from google.auth.exceptions import RefreshError
 
 
 def get_user_calendars(user):

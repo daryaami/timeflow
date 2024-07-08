@@ -50,7 +50,6 @@ const menuItems = [
   }
 
   &__link {
-    @include subtitle;
     display: block;
     padding: size(14px);
     padding-left: size(56px);

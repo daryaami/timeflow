@@ -18,6 +18,7 @@ const props = defineProps({
 
 <style lang="scss">
   .google-button {
+    @include bold-20;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -25,8 +26,6 @@ const props = defineProps({
     height: size(76px);
     width: size(391px);
     background-color: #ABFFF0;
-    font-weight: 500;
-    font-size: size(20px);
     color: $darkest;
     gap: size(8px);
 

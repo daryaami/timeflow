@@ -31,7 +31,6 @@ import MainMenuVue from "./MainMenu.vue";
   }
 
   &__title {
-    @include title;
     margin: 0;
   }
 

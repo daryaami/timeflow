@@ -1,20 +1,84 @@
-@mixin title {
+@mixin big-title {
+  font-family: $main-font;
+  font-weight: 500;
   font-size: size(34px);
-  line-height: size(43px);
+  line-height: 100%;
+  letter-spacing: -0.04em;
+}
+
+@mixin bold-title-28 {
+  font-family: $main-font;
+  font-weight: 500;
+  font-size: size(28px);
+  line-height: 100%;
+}
+
+@mixin bold-title-24 {
+  font-family: $main-font;
   font-weight: 400;
-  font-family: $main-font;
-}
-
-@mixin subtitle {
   font-size: size(24px);
-  line-height: size(30px);
-  font-weight: 300;
-  font-family: $main-font;
+  line-height: 100%;
 }
 
-@mixin text {
-  font-size: size(20px);
-  line-height: size(25px);
-  font-weight: 300;
+@mixin bold-20 {
   font-family: $main-font;
+  font-weight: 500;
+  font-size: size(20px);
+  line-height: 100%;
 }
+
+@mixin bold-18 {
+  font-family: $main-font;
+  font-weight: 400;
+  font-size: size(18px);
+  line-height: 100%;
+}
+
+@mixin bold-16 {
+  font-family: $main-font;
+  font-weight: 400;
+  font-size: size(16px);
+  line-height: 100%;
+}
+
+@mixin small-bold {
+  font-family: $main-font;
+  font-size: size(14px);
+  line-height: 100%;
+  font-weight: 400;
+}
+
+@mixin header {
+  font-family: $main-font;
+  font-weight: 300;
+  font-size: 30px;
+  line-height: 100%;
+}
+
+@mixin light-24 {
+  font-family: $main-font;
+  font-weight: 250;
+  font-size: size(24px);
+  line-height: 100%;
+}
+
+@mixin light-20 {
+  font-family: $main-font;
+  font-weight: 250;
+  font-size: size(20px);
+  line-height: 100%;
+}
+
+@mixin light-16 {
+  font-family: $main-font;
+  font-weight: 250;
+  font-size: size(16px);
+  line-height: 100%;
+}
+
+@mixin small-light {
+  font-family: $main-font;
+  font-weight: 250;
+  font-size: size(14px);
+  line-height: 100%;
+} 

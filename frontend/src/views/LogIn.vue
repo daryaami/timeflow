@@ -49,10 +49,8 @@ import logoVue from '../components/icons/logo.vue'
     }
 
     &__text {
+      @include bold-20;
       color: $white;
-      font-weight: 400;
-      font-size: size(20px);
-      line-height: 100%;
       margin-top: 0;
       margin-bottom: size(163px);
 
@@ -63,8 +61,7 @@ import logoVue from '../components/icons/logo.vue'
 
 
     &__privacy-text {
-      font-weight: 300;
-      font-size: size(20px);
+      @include light-20;
       color: $dark-lines;
       margin: 0;
 

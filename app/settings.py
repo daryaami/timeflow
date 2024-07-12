@@ -62,13 +62,14 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.postgres",
-    # "debug_toolbar",
+    
     "main",
     "planner",
     "habits",
     "tasks",
     "google_auth",
     "users",
+    "scheduler",
 ]
 
 MIDDLEWARE = [

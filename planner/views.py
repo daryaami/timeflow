@@ -10,10 +10,7 @@ from app import settings
 
 from datetime import datetime, timedelta, time
 import json
-from ortools.sat.python import cp_model
 from datetime import datetime, timedelta
-import asyncio
-from asgiref.sync import sync_to_async
 
 scopes = settings.SCOPES
 
@@ -26,12 +23,10 @@ def get_events(request):
         # Получение списка подключенных календарей
         user_calendars = get_user_calendars(user)
 
-        print("creds:", user_credentials)
-
         # Получение даты из параметров запроса
         if user_calendars:
             date_param = request.GET.get('date', None)
-            events_by_days = get_all_events_by_weekday(date_param, user_calendars, user_credentials)
+            events_by_days = get_all_events_by_weekday(user_calendars, user_credentials, date_param)
 
         return JsonResponse(events_by_days)
 

@@ -1,7 +1,6 @@
 from django.db import models
 from datetime import time, date
-from users.models import CustomUser
-from planner.models import Hours
+from users.models import CustomUser, Hours
 
 # Create your models here.
 class Habit(models.Model):

@@ -18,9 +18,6 @@ def index(request):
 
     if not user.is_authenticated:
         return redirect('main:login')
-    
-    user_creds = get_and_refresh_user_credentials(user)
-    print(user_creds)
 
     return redirect("main:planner")
 
@@ -34,7 +31,17 @@ def signup_view(request):
     
 
 def planner(request):
-    return render(request, "index.html")
+    try:
+        user = request.user
+        creds = get_and_refresh_user_credentials(user)
+        if creds.refresh_token:
+            return render(request, "index.html")
+        else:
+            return render(request, "index.html", status=500)
+    
+    except Exception as e:
+        return redirect(reverse("auth:refresh_permissions"))
+    
 
 
 def google_callback(request):

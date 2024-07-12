@@ -16,7 +16,7 @@ def get_and_refresh_user_credentials(user):
 
     if not user_credentials:
         return ValueError("User credentials not found.")
-
+    
     if user_credentials.refresh_token:
         if user_credentials.access_token_expiry < timezone.now():
             try:

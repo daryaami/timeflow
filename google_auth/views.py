@@ -14,12 +14,11 @@ from utils import get_and_refresh_user_credentials
 
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-scopes = settings.SCOPES
 
 
 def _create_flow(state=None):
     flow = Flow.from_client_secrets_file(
-        settings.GOOGLE_CLIENT_SECRETS_FILE, scopes=scopes, state=state)
+        settings.GOOGLE_CLIENT_SECRETS_FILE, scopes=settings.SCOPES, state=state)
     flow.redirect_uri = settings.REDIRECT_URI
     return flow
 
@@ -89,11 +88,27 @@ def refresh_permissions_callback(request):
         'client_secret': credentials.client_secret,
         'scopes': ','.join(credentials.scopes),
         'access_token_expiry': credentials.expiry
-    })
+        })
+
+        user_calendars = UserCalendar.objects.filter(user=user)
+        if not user_calendars:
+            calendar_service = build('calendar', 'v3', credentials=credentials)
+            calendars = calendar_service.calendarList().list().execute()
+            
+            primary_calendar = next((cal for cal in calendars['items'] if cal.get('primary', False)), None)
+            if primary_calendar:
+                user_timezone = primary_calendar['timeZone']
+                user.time_zone = user_timezone
+                user.save()
+            
+            for calendar in calendars['items']:
+                UserCalendar.objects.update_or_create(user=user, calendar_id=calendar['id'], defaults={'summary': calendar['summary']})
+
+        login(request, user)
+        return redirect('main:index')
 
     except Exception as e:
-        return e
-
+        redirect("auth:register")
 
 
 def google_oauth(request):
@@ -101,7 +116,7 @@ def google_oauth(request):
     authorization_response = request.get_full_path()
 
     flow = Flow.from_client_secrets_file(
-        settings.GOOGLE_CLIENT_SECRETS_FILE, scopes=scopes, state=state)
+        settings.GOOGLE_CLIENT_SECRETS_FILE, scopes=settings.SCOPES, state=state)
     flow.redirect_uri = settings.REDIRECT_URI
 
     flow.fetch_token(authorization_response=authorization_response)

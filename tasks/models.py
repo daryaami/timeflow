@@ -1,7 +1,6 @@
 from django.db import models
-from datetime import date, timedelta
-from users.models import CustomUser, UserCalendar
-from planner.models import Hours
+from datetime import date
+from users.models import CustomUser, Hours
 
 
 # Create your models here.
@@ -27,7 +26,7 @@ class Task(models.Model):
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='tasks', null=True)
     hours = models.ForeignKey(Hours, on_delete=models.SET_NULL, related_name='tasks', null=True, default=None)
-
+    
     def __str__(self):
         return "%s (id %s)" % (self.name, self.pk)
 

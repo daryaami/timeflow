@@ -1,32 +1,24 @@
 import datetime
-from datetime import date, datetime, timedelta
+from datetime import date, time, datetime, timedelta, timezone
 from tasks.models import Task
+import pytz 
 from planner.utils import get_all_user_events
 
 SCHEDULE_INTERVAL_DAYS = 90
 
-
-class TaskToSchedule:
-    def __init__(self, name, duration, deadline, work_hours, max_block_duration):
-        self.name = name
-        self.duration = duration
-        self.deadline = deadline
-        self.work_hours = work_hours  # work_hours is a dict with days as keys and time intervals as values
-        self.max_block_duration = max_block_duration
-        self.blocks = []  # to store assigned time blocks
-
-
 class TaskScheduler:
     def __init__(self, user):
+        self.user_timezone = pytz.timezone(user.time_zone)
         self.tasks = []
         self.calendar = self.load_user_calendar(user)  # This should be filled with existing calendar events
 
     def load_user_calendar(self, user):
         user_credentials = user.get_and_refresh_credentials()
-        user_calendars = user.get_user_calendars()
+        user_calendars = user.get_calendars()
         # Load existing calendar events for the user
         events = get_all_user_events(user_calendars=user_calendars, user_credentials=user_credentials, start_date=date.today(), time_interval=timedelta(days=SCHEDULE_INTERVAL_DAYS))
-        calendar = [(event.get("start").get("dateTime"), event.get('end').get("dateTime")) for event in events]
+        calendar = [(datetime.fromisoformat(event.get("start").get("dateTime")).astimezone(self.user_timezone),
+                    datetime.fromisoformat(event.get('end').get("dateTime")).astimezone(self.user_timezone)) for event in events]
         return sorted(calendar)
 
     def add_task(self, task):
@@ -40,10 +32,10 @@ class TaskScheduler:
             day_of_week = current_date.strftime("%A")
             if day_of_week in work_hours:
                 for interval in work_hours[day_of_week]:
-                    work_start = current_date.replace(hour=interval[0].hour,
-                                                    minute=interval[0].minute, second=0)
-                    work_end = current_date.replace(hour=interval[1].hour,
-                                                    minute=interval[1].minute, second=0)
+                    interval_start = time.fromisoformat(interval[0])
+                    interval_end = time.fromisoformat(interval[1])
+                    work_start = self.user_timezone.localize(datetime.combine(current_date, interval_start))
+                    work_end = self.user_timezone.localize(datetime.combine(current_date, interval_end))
 
                     slot_start = work_start
 
@@ -60,7 +52,7 @@ class TaskScheduler:
                     if slot_start < work_end:
                         free_slots.append((slot_start, work_end))
 
-            current_date += datetime.timedelta(days=1)
+            current_date += timedelta(days=1)
 
         return free_slots
 
@@ -69,8 +61,8 @@ class TaskScheduler:
         self.tasks.sort(key=lambda x: (x.priority, x.due_date))
 
         for task in self.tasks:
-            duration_left = task.duration
-            current_date = datetime.datetime.now().date()
+            duration_left = task.time_needed
+            current_date = datetime.now(self.user_timezone).date()
 
             while duration_left > 0 and current_date <= task.due_date:
                 free_slots = self.find_free_slots(task.work_hours, current_date, task.due_date)
@@ -89,33 +81,25 @@ class TaskScheduler:
                         slot_duration = duration_left
 
                     # Allocate time block to the task
-                    task.blocks.append((slot_start, slot_start + datetime.timedelta(minutes=slot_duration)))
+                    task.blocks.append((slot_start, slot_start + timedelta(minutes=slot_duration)))
                     duration_left -= slot_duration
-                    current_date = slot_start.date() + datetime.timedelta(minutes=slot_duration)
+                    current_date = slot_start.date() + timedelta(minutes=slot_duration)
 
                     # Update calendar to reflect new booking
-                    self.calendar.append((slot_start, slot_start + datetime.timedelta(minutes=slot_duration)))
+                    self.calendar.append((slot_start, slot_start + timedelta(minutes=slot_duration)))
+                    print(self.calendar)
 
-                current_date += datetime.timedelta(days=1)  # move to next day
+                current_date += timedelta(days=1)  # move to next day
 
 # Example usage
 def schedule_tasks_for_user(user):
     scheduler = TaskScheduler(user)
     tasks = Task.objects.filter(user=user)
     for task in tasks:
-        hours = task.hours
-        work_hours = {day: [(datetime.time.fromisoformat(interval['start']), datetime.time.fromisoformat(interval['end'])) 
-                            for interval in intervals] 
-                    for day, intervals in hours.intervals.items()}
-        new_task = TaskToSchedule(
-            name=task.name,
-            priority=task.priority,
-            duration=task.time_needed,
-            due_date=task.due_date,
-            work_hours=work_hours,
-            max_block_duration=task.max_duration
-        )
-        scheduler.add_task(new_task)
+        work_hours = {day: [(interval['start'], interval['end']) for interval in intervals] for day, intervals in task.hours.intervals.items()}
+        task.work_hours = work_hours
+        task.blocks = []
+        scheduler.add_task(task)
 
     scheduler.schedule_tasks()
 

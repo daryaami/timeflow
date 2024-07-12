@@ -18,5 +18,5 @@ from scheduler.utils import schedule_tasks_for_user
 # Create your views here.
 def scheduler(request):
     user = request.user
-    # tasks = schedule_tasks_for_user(user)
-    return JsonResponse({"tasks": user.get_and_refresh_credentials()})
+    tasks = schedule_tasks_for_user(user)
+    return JsonResponse({"tasks": [task.blocks for task in tasks]})

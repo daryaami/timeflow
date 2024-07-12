@@ -10,6 +10,8 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from app import settings
 
+time_margin = timedelta(minutes=settings.TOKEN_EXPIRY_MARGIN)
+
 
 class CustomUserManager(BaseUserManager):
     def create_user(
@@ -51,71 +53,60 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["name"]
 
-    def __str__(self):
-        return self.email
-
     def get_and_refresh_credentials(self):
-        user_credentials = GoogleCredentials.objects.filter(user=self).first()
+        try:
+            user_credentials = GoogleCredentials.objects.get(user=self)
+            if user_credentials.refresh_token:
+                if user_credentials.access_token_expiry < timezone.now():
+                    try:
+                        # Refresh the access token
+                        refresh_request = requests.post(
+                                settings.TOKEN_URI,
+                                data={
+                                    "client_id": user_credentials.client_id,
+                                    "client_secret": user_credentials.client_secret,
+                                    "refresh_token": user_credentials.refresh_token,
+                                    "grant_type": "refresh_token",
+                                },
+                            )
+                        
+                        if refresh_request.status_code != 200:
+                            return ValueError(f"Failed to refresh token: {refresh_request.status_code}, {refresh_request.text}")
 
-        if not user_credentials:
-            return ValueError("User credentials not found.")
-        
-        if user_credentials.refresh_token:
-            if user_credentials.access_token_expiry < timezone.now():
-                try:
-                # Refresh the access token
-                    refresh_request = requests.post(
-                            settings.TOKEN_URI,
-                            data={
-                                "client_id": user_credentials.client_id,
-                                "client_secret": user_credentials.client_secret,
-                                "refresh_token": user_credentials.refresh_token,
-                                "grant_type": "refresh_token",
-                            },
-                        )
+                        new_credentials = refresh_request.json()
+
+                        user_credentials.access_token = new_credentials.get("access_token")
+                        user_credentials.access_token_expiry = timezone.now() + timedelta(seconds=new_credentials["expires_in"])
+                        user_credentials.save()
+
+                    except requests.RequestException as e:
+                        return ValueError(f"RequestException: {str(e)}")
+                    except Exception as e:
+                        return ValueError(f"Exception: {str(e)}")
                     
-                    if refresh_request.status_code != 200:
-                        return ValueError(f"Failed to refresh token: {refresh_request.status_code}, {refresh_request.text}")
-
-                    new_credentials = refresh_request.json()
-
-                    user_credentials.access_token = new_credentials.get("access_token")
-                    user_credentials.access_token_expiry = timezone.now() + timedelta(seconds=new_credentials["expires_in"])
-                    user_credentials.save()
-
-                    credentials = Credentials(
-                        token=user_credentials.access_token,
-                        refresh_token=user_credentials.refresh_token,
-                        token_uri=user_credentials.token_uri,
-                        client_id=user_credentials.client_id,
-                        client_secret=user_credentials.client_secret,
-                        scopes=user_credentials.scopes.split(","),
-                    )
-
-                    return credentials
-
-                except requests.RequestException as e:
-                    return ValueError(f"RequestException: {str(e)}")
-                except Exception as e:
-                    return ValueError(f"Exception: {str(e)}")
+                # Create and return credentials
+                credentials = Credentials(
+                    token=user_credentials.access_token,
+                    refresh_token=user_credentials.refresh_token,
+                    token_uri=user_credentials.token_uri,
+                    client_id=user_credentials.client_id,
+                    client_secret=user_credentials.client_secret,
+                    scopes=user_credentials.scopes.split(","),
+                )
                 
-            # Create and return credentials
-            credentials = Credentials(
-                token=user_credentials.access_token,
-                refresh_token=user_credentials.refresh_token,
-                token_uri=user_credentials.token_uri,
-                client_id=user_credentials.client_id,
-                client_secret=user_credentials.client_secret,
-                scopes=user_credentials.scopes.split(","),
-            )
-            
-            return credentials
+                return credentials
 
-        else:
-            return ValueError("User credentials not found or refresh token missing.")
+            else:
+                return ValueError("User credentials not found or refresh token missing.")
+    
+        except GoogleCredentials.DoesNotExist:
+            return ValueError("User credentials not found.")
 
     def get_calendars(self):
         return UserCalendar.objects.filter(user=self)
+    
+    def __str__(self):
+        return self.email
 
     class Meta:
         db_table = "user"
@@ -130,6 +121,9 @@ class GoogleCredentials(models.Model):
     client_secret = models.CharField(max_length=255)
     scopes = models.CharField(max_length=255)
     access_token_expiry = models.DateTimeField(null=True, blank=True)
+
+    def is_valid(self):
+        return self.access_token_expiry > timezone.now() - time_margin
 
     def __str__(self):
         return "%s (id %s)" % (self.user.email, self.pk)

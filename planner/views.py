@@ -4,8 +4,7 @@ from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
 from googleapiclient.discovery import build
 
-from utils import get_and_refresh_user_credentials
-from planner.utils import get_user_calendars, get_all_events_by_weekday
+from planner.utils import get_all_events_by_weekday
 from app import settings
 
 from datetime import datetime, timedelta, time
@@ -16,13 +15,12 @@ scopes = settings.SCOPES
 
 def get_events(request):
     user = request.user
-
     try:
         # Получение пользовательских учетных данных
-        user_credentials = get_and_refresh_user_credentials(user)
+        user_credentials = user.get_and_refresh_credentials()
         # Получение списка подключенных календарей
-        user_calendars = get_user_calendars(user)
-
+        user_calendars = user.get_calendars()
+        
         # Получение даты из параметров запроса
         if user_calendars:
             date_param = request.GET.get('date', None)

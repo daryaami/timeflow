@@ -5,7 +5,6 @@ from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from app import settings
-from utils import get_and_refresh_user_credentials
 
 scopes = settings.SCOPES
 
@@ -33,14 +32,15 @@ def signup_view(request):
 def planner(request):
     try:
         user = request.user
-        creds = get_and_refresh_user_credentials(user)
+        creds = user.get_and_refresh_credentials()
         if creds.refresh_token:
             return render(request, "index.html")
         else:
             return render(request, "index.html", status=500)
     
     except Exception as e:
-        return redirect(reverse("auth:refresh_permissions"))
+        return JsonResponse({"error": 'e'})
+        # return redirect(reverse("auth:refresh_permissions"))
     
 
 

@@ -10,7 +10,7 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 
 from users.models import GoogleCredentials, UserCalendar, CustomUser
-from utils import get_and_refresh_user_credentials
+# from utils import get_and_refresh_user_credentials
 
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
@@ -132,7 +132,7 @@ def google_oauth(request):
     try:
         user = CustomUser.objects.get(email=email)
 
-        user_credentials = get_and_refresh_user_credentials(user)
+        user_credentials = user.get_and_refresh_user_credentials()
 
         if user_credentials:
             # Log in the user and redirect to planner

@@ -6,12 +6,7 @@ from googleapiclient.discovery import build
 
 from users.models import GoogleCredentials, UserCalendar
 import concurrent.futures
-from utils import get_and_refresh_user_credentials
 from google.auth.exceptions import RefreshError
-
-
-def get_user_calendars(user):
-    return UserCalendar.objects.filter(user=user)
 
 
 def get_calendar_events(user_credentials, calendar_id, start_time, end_time):

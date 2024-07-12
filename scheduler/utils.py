@@ -1,8 +1,7 @@
 import datetime
 from datetime import date, datetime, timedelta
 from tasks.models import Task
-from planner.utils import get_all_user_events, get_user_calendars
-from utils import get_and_refresh_user_credentials
+from planner.utils import get_all_user_events
 
 SCHEDULE_INTERVAL_DAYS = 90
 
@@ -23,8 +22,8 @@ class TaskScheduler:
         self.calendar = self.load_user_calendar(user)  # This should be filled with existing calendar events
 
     def load_user_calendar(self, user):
-        user_credentials = get_and_refresh_user_credentials(user)
-        user_calendars = get_user_calendars(user)
+        user_credentials = user.get_and_refresh_credentials()
+        user_calendars = user.get_user_calendars()
         # Load existing calendar events for the user
         events = get_all_user_events(user_calendars=user_calendars, user_credentials=user_credentials, start_date=date.today(), time_interval=timedelta(days=SCHEDULE_INTERVAL_DAYS))
         calendar = [(event.get("start").get("dateTime"), event.get('end').get("dateTime")) for event in events]

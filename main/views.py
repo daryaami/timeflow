@@ -41,7 +41,11 @@ def planner(request):
     except Exception as e:
         return JsonResponse({"error": 'e'})
         # return redirect(reverse("auth:refresh_permissions"))
-    
+
+
+def tasks_view(request):
+    return render(request, "index.html")
+    # return render(request, "tasks/templates/tasks.html")
 
 
 def google_callback(request):

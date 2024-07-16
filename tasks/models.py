@@ -1,6 +1,7 @@
 from django.db import models
 from datetime import date
 from users.models import CustomUser, Hours
+from datetime import timedelta
 
 
 # Create your models here.
@@ -20,15 +21,26 @@ class Task(models.Model):
     max_duration = models.IntegerField(default=0)
     due_date = models.DateField(blank=True)
     schedule_after = models.DateField(default=date.today)
+    time_spent = models.DurationField(null=True, default=timedelta(minutes=0))
     # private = models.BooleanField(default=True)
-    visibility = models.CharField(max_length=200, default="Busy")  # Что показывается в календаре для других людей
+    visibility = models.CharField(
+        max_length=200, default="Busy"
+    )  # Что показывается в календаре для других людей
     notes = models.TextField(blank=True)
 
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='tasks', null=True)
-    hours = models.ForeignKey(Hours, on_delete=models.SET_NULL, related_name='tasks', null=True, default=None)
-    
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="tasks", null=True
+    )
+    hours = models.ForeignKey(
+        Hours, on_delete=models.SET_NULL, related_name="tasks", null=True, default=None
+    )
+
     def __str__(self):
         return "%s (id %s)" % (self.name, self.pk)
+
+    def get_hours(self):
+        task_hours = Hours.objects.get(id=self.hours.pk)
+        return task_hours.intervals
 
     def save(self, *args, **kwargs):
         if not self.min_duration:

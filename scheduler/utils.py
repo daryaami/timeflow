@@ -61,7 +61,7 @@ class TaskScheduler:
         self.tasks.sort(key=lambda x: (x.priority, x.due_date))
 
         for task in self.tasks:
-            duration_left = task.time_needed
+            duration_left = task.duration
             current_date = datetime.now(self.user_timezone).date()
 
             while duration_left > 0 and current_date <= task.due_date:

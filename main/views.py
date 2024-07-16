@@ -5,6 +5,7 @@ from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from app import settings
+from tasks.utils import get_user_tasks
 
 scopes = settings.SCOPES
 
@@ -44,8 +45,11 @@ def planner(request):
 
 
 def tasks_view(request):
-    return render(request, "index.html")
-    # return render(request, "tasks/templates/tasks.html")
+    # return render(request, "index.html")
+    user = request.user
+    tasks = get_user_tasks(user)
+    context = {'tasks': tasks}
+    return render(request, "tasks/tasks.html", context=context)
 
 
 def google_callback(request):

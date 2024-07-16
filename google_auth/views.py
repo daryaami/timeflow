@@ -10,8 +10,7 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 
 from users.models import GoogleCredentials, UserCalendar, CustomUser
-# from utils import get_and_refresh_user_credentials
-
+from users.utils import create_user_custom_hours
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
@@ -90,25 +89,25 @@ def refresh_permissions_callback(request):
         'access_token_expiry': credentials.expiry
         })
 
-        user_calendars = UserCalendar.objects.filter(user=user)
-        if not user_calendars:
+        primary_calendar = UserCalendar.objects.filter(primary=True).first()
+
+        if not primary_calendar:
+            # Здесь отправить на страницу выбора кадендарей
             calendar_service = build('calendar', 'v3', credentials=credentials)
             calendars = calendar_service.calendarList().list().execute()
             
-            primary_calendar = next((cal for cal in calendars['items'] if cal.get('primary', False)), None)
-            if primary_calendar:
-                user_timezone = primary_calendar['timeZone']
-                user.time_zone = user_timezone
-                user.save()
-            
             for calendar in calendars['items']:
-                UserCalendar.objects.update_or_create(user=user, calendar_id=calendar['id'], defaults={'summary': calendar['summary']})
+                UserCalendar.objects.update_or_create(user=user, calendar_id=calendar['id'], defaults={'summary': calendar['summary'], 'primary': calendar.get('primary', False)})
+
+            primary_calendar = UserCalendar.objects.get(primary=True)
+            
+        create_user_custom_hours(user=user, calendar=primary_calendar)
 
         login(request, user)
         return redirect('main:index')
 
     except Exception as e:
-        redirect("auth:register")
+        raise ValueError(f'Something went wrong: {e}')
 
 
 def google_oauth(request):
@@ -169,14 +168,16 @@ def google_oauth(request):
     calendar_service = build('calendar', 'v3', credentials=credentials)
     calendars = calendar_service.calendarList().list().execute()
     
-    primary_calendar = next((cal for cal in calendars['items'] if cal.get('primary', False)), None)
-    if primary_calendar:
-        user_timezone = primary_calendar['timeZone']
-        user.time_zone = user_timezone
-        user.save()
-    
     for calendar in calendars['items']:
-        UserCalendar.objects.update_or_create(user=user, calendar_id=calendar['id'], defaults={'summary': calendar['summary']})
+        UserCalendar.objects.update_or_create(user=user, calendar_id=calendar['id'], defaults={'summary': calendar['summary'], 'primary': calendar.get('primary', False)})
+
+    primary_calendar = UserCalendar.objects.get(primary=True)
+    
+    user_timezone = primary_calendar['timeZone']
+    user.time_zone = user_timezone
+    user.save()
+
+    create_user_custom_hours(user=user, calendar=primary_calendar)
 
     login(request, user)
     return redirect('main:planner')

@@ -1,36 +1,20 @@
 from django.db import models
 from datetime import time, date
 from users.models import CustomUser, Hours
+from utils import Priority, Period, PRIORITY_CHOICES, PERIOD_CHOICES, CATEGORY_CHOICES
 
 # Create your models here.
 class Habit(models.Model):
 
-    CATEGORY_CHOICES = [
-        ('personal', 'Personal'),
-        ('work', 'Work')
-    ]
-    
-    PRIORITY_CHOICES = [
-        ('critical', 'Critical'),
-        ('high', 'High'),
-        ('medium', 'Medium'),
-        ('low', 'Low')
-    ]
-
-    PERIOD_CHOICES = [
-        ('every day', 'Every day'), 
-        ('weekly', 'Weekly'), 
-        ('monthly', 'Monthly')
-    ]
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='habits', null=True)
     hours = models.ForeignKey(Hours, on_delete=models.SET_NULL, related_name='habits', null=True, default=None)
 
     name = models.CharField(max_length=255)
-    priority = models.CharField(choices=PRIORITY_CHOICES, default='high', max_length=20)
+    priority = models.CharField(choices=PRIORITY_CHOICES, default=Priority.HIGH, max_length=20)
     min_duration = models.IntegerField(default=30) # Длительность в минутах
     max_duration = models.IntegerField(default=60)
     category = models.CharField(choices=CATEGORY_CHOICES, default='personal', max_length=20)
-    period = models.CharField(choices=PERIOD_CHOICES, default='weekly', max_length=20)
+    period = models.CharField(choices=PERIOD_CHOICES, default=Period.WEEKLY, max_length=20)
     times_per_period = models.SmallIntegerField(default=1)
     # ideal_days = models.JSONField(blank=True, null=True)
     ideal_time = models.TimeField(default=time(8, 0))

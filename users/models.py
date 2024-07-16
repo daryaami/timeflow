@@ -105,6 +105,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def get_calendars(self):
         return UserCalendar.objects.filter(user=self)
     
+    def get_user_hours_list(self):
+        return Hours.objects.filter(user=self)
+    
     def __str__(self):
         return self.email
 
@@ -135,6 +138,7 @@ class GoogleCredentials(models.Model):
 class UserCalendar(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     calendar_id = models.CharField(max_length=255)
+    primary = models.BooleanField(default=False)
     summary = models.CharField(max_length=255)
 
     class Meta:
@@ -156,7 +160,11 @@ class Hours(models.Model):
     name = models.CharField(max_length=255)
     intervals = (
         models.JSONField()
-    )  # Пример: {"Monday": [{"start": "12:00", "end": "14:00"}, {"start": "16:00", "end": "18:00"}], "Wednesday": [{"start": "13:00", "end": "19:00"}]}
+    )  
+    # Пример: {"Monday": [{"start": "12:00", "end": "14:00"}, {"start": "16:00", "end": "18:00"}], "Wednesday": [{"start": "13:00", "end": "19:00"}]}
+
+    def to_json(self):
+        return {"id": self.pk, "name": self.name, "intervals": self.intervals}
 
     def __str__(self):
         return "%s (id %s)" % (self.name, self.pk)

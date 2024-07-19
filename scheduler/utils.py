@@ -1,30 +1,99 @@
 import datetime
 from datetime import date, time, datetime, timedelta, timezone
 from tasks.models import Task
-import pytz 
+import pytz
 from planner.utils import get_all_user_events
 
 SCHEDULE_INTERVAL_DAYS = 90
 
+
+def timefromstring(time_str):
+    """
+    Преобразует строку времени в объект datetime.time.
+
+    Args:
+        time_str (str): Время в формате "HH:MM".
+    Returns:
+        datetime.time: Объект времени.
+    """
+    try:
+        return datetime.strptime(time_str, "%H:%M").time()
+    except ValueError as e:
+        print(f"Invalid time format: {time_str}. Error: {e}")
+        return None
+
+
 class TaskScheduler:
+    """
+    Планировщик задач для пользователя.
+
+    Attributes:
+        user_timezone (timezone): Временная зона пользователя.
+        tasks (list): Список задач.
+        calendar (list): Календарь пользователя с событиями.
+    """
+
     def __init__(self, user):
+        """
+        Инициализация TaskScheduler с данными пользователя.
+
+        Args:
+            user (User): Объект пользователя.
+        """
         self.user_timezone = pytz.timezone(user.time_zone)
         self.tasks = []
-        self.calendar = self.load_user_calendar(user)  # This should be filled with existing calendar events
+        self.calendar = self.load_user_calendar(user)
 
     def load_user_calendar(self, user):
-        user_credentials = user.get_and_refresh_credentials()
-        user_calendars = user.get_calendars()
-        # Load existing calendar events for the user
-        events = get_all_user_events(user_calendars=user_calendars, user_credentials=user_credentials, start_date=date.today(), time_interval=timedelta(days=SCHEDULE_INTERVAL_DAYS))
-        calendar = [(datetime.fromisoformat(event.get("start").get("dateTime")).astimezone(self.user_timezone),
-                    datetime.fromisoformat(event.get('end').get("dateTime")).astimezone(self.user_timezone)) for event in events]
-        return sorted(calendar)
+        """
+        Загружает календарь пользователя.
+
+        Args:
+            user (User): Объект пользователя.
+
+        Returns:
+            list: Список событий в календаре.
+        """
+        try:
+            user_credentials = user.get_and_refresh_credentials()
+            user_calendars = user.get_calendars()
+            events = get_all_user_events(
+                user_calendars=user_calendars,
+                user_credentials=user_credentials,
+                start_date=date.today(),
+                time_interval=timedelta(days=SCHEDULE_INTERVAL_DAYS),
+            )
+            calendar = [
+                (
+                    datetime.fromisoformat(
+                        event.get("start").get("dateTime")
+                    ).astimezone(self.user_timezone),
+                    datetime.fromisoformat(event.get("end").get("dateTime")).astimezone(
+                        self.user_timezone
+                    ),
+                )
+                for event in events
+            ]
+            return sorted(calendar)
+        except Exception as e:
+            print(f"Error loading calendar: {e}")
+            return []
 
     def add_task(self, task):
         self.tasks.append(task)
 
     def find_free_slots(self, work_hours, start_date, end_date):
+        """
+        Ищет свободные временные слоты в расписании.
+
+        Args:
+            work_hours (dict): Рабочие часы для каждого дня недели.
+            start_date (date): Дата начала поиска.
+            end_date (date): Дата окончания поиска.
+
+        Returns:
+            list: Список свободных временных слотов.
+        """
         free_slots = []
         current_date = start_date
 
@@ -32,10 +101,14 @@ class TaskScheduler:
             day_of_week = current_date.strftime("%A")
             if day_of_week in work_hours:
                 for interval in work_hours[day_of_week]:
-                    interval_start = time.fromisoformat(interval[0])
-                    interval_end = time.fromisoformat(interval[1])
-                    work_start = self.user_timezone.localize(datetime.combine(current_date, interval_start))
-                    work_end = self.user_timezone.localize(datetime.combine(current_date, interval_end))
+                    interval_start = timefromstring(interval[0])
+                    interval_end = timefromstring(interval[1])
+                    work_start = self.user_timezone.localize(
+                        datetime.combine(current_date, interval_start)
+                    )
+                    work_end = self.user_timezone.localize(
+                        datetime.combine(current_date, interval_end)
+                    )
 
                     slot_start = work_start
 
@@ -57,15 +130,20 @@ class TaskScheduler:
         return free_slots
 
     def schedule_tasks(self):
-        # Sort tasks by priority and due date
+        """
+        Планирует задачи, распределяя их по доступным временным слотам.
+        """
         self.tasks.sort(key=lambda x: (x.priority, x.due_date))
 
         for task in self.tasks:
             duration_left = task.duration
-            current_date = datetime.now(self.user_timezone).date()
+            current_date = datetime.now(self.user_timezone)
+            max_duration = task.max_duration if task.max_duration else task.duration
 
             while duration_left > 0 and current_date <= task.due_date:
-                free_slots = self.find_free_slots(task.work_hours, current_date, task.due_date)
+                free_slots = self.find_free_slots(
+                    task.work_hours, current_date, task.due_date
+                )
 
                 for slot in free_slots:
                     if duration_left <= 0:
@@ -74,29 +152,42 @@ class TaskScheduler:
                     slot_start, slot_end = slot
                     slot_duration = (slot_end - slot_start).seconds // 60
 
-                    if slot_duration > task.max_duration:
-                        slot_duration = task.max_duration
+                    if slot_duration > max_duration:
+                        slot_duration = max_duration
 
                     if slot_duration > duration_left:
                         slot_duration = duration_left
 
-                    # Allocate time block to the task
-                    task.blocks.append((slot_start, slot_start + timedelta(minutes=slot_duration)))
+                    task.blocks.append(
+                        (slot_start, slot_start + timedelta(minutes=slot_duration))
+                    )
                     duration_left -= slot_duration
                     current_date = slot_start.date() + timedelta(minutes=slot_duration)
 
-                    # Update calendar to reflect new booking
-                    self.calendar.append((slot_start, slot_start + timedelta(minutes=slot_duration)))
-                    print(self.calendar)
+                    self.calendar.append(
+                        (slot_start, slot_start + timedelta(minutes=slot_duration))
+                    )
 
-                current_date += timedelta(days=1)  # move to next day
+                current_date += timedelta(days=1)
 
-# Example usage
+
 def schedule_tasks_for_user(user):
+    """
+    Планирует задачи для пользователя.
+
+    Args:
+        user (User): Объект пользователя.
+
+    Returns:
+        list: Список задач с обновленными блоками времени.
+    """
     scheduler = TaskScheduler(user)
     tasks = Task.objects.filter(user=user)
     for task in tasks:
-        work_hours = {day: [(interval['start'], interval['end']) for interval in intervals] for day, intervals in task.hours.intervals.items()}
+        work_hours = {
+            day: [(interval["start"], interval["end"]) for interval in intervals]
+            for day, intervals in task.hours.intervals.items()
+        }
         task.work_hours = work_hours
         task.blocks = []
         scheduler.add_task(task)

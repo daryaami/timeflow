@@ -108,6 +108,16 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def get_user_hours_list(self):
         return Hours.objects.filter(user=self)
     
+    def get_profile_json(self):
+        profile_info = {
+            "email": self.email,
+            "name": self.name,
+            "image_url": self.image,
+            "joined_on": self.joined_on,
+            "time_zone": self.time_zone,
+        }
+        return profile_info
+    
     def __str__(self):
         return self.email
 

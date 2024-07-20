@@ -1,9 +1,12 @@
 .input {
+  width: 100%;
+  position: relative;
 
   &__input {
     @include light-16;
+    width: 100%;
     outline: none;
-    border: 1px solid $light-grey;
+    border: 1px solid $light-grey;  
     border-radius: size(5px);
     height: size(42px);
     display: flex;
@@ -12,5 +15,18 @@
     width: 100%;
     padding-left: size(14px);
     padding-right: size(16px); 
+    box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.2);
+  }
+
+  &__label {
+    @include small-light;
+    padding: 0 1px;
+    color: $light-grey;
+    display: block;
+    position: absolute;
+    left: size(16px);
+    top: 0;
+    transform: translateY(-50%);
+    background: linear-gradient(to top, #fcfcfc 0%, #fcfcfc 50%, transparent 50%, transparent 100%);
   }
 }

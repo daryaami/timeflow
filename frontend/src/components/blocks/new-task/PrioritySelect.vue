@@ -89,6 +89,7 @@ const optionClickHandler = (option) => {
 <style lang="scss">
 .priority-select {
   position: relative;
+  z-index: 10;
   margin-left: size(29px);
 
   &__button {

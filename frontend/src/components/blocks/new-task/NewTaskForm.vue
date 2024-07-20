@@ -1,4 +1,5 @@
 <script setup>
+import DurationInputVue from "./DurationInput.vue";
 import PrioritySelectVue from "./PrioritySelect.vue";
 
 let name;
@@ -21,6 +22,10 @@ const submitHandler = (e) => {
       </div>
 
       <PrioritySelectVue/>
+    </div>
+
+    <div class="new-task-form__row">
+      <DurationInputVue />
     </div>
 
     <button class="new-task-form__button">Create</button>

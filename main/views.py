@@ -12,9 +12,11 @@ scopes = settings.SCOPES
 
 def index(request):
     user = request.user
-
-    if not user:
-        return redirect('main:signup')
+    
+    try:
+        email = user.email
+    except AttributeError:
+        return redirect("main:signup")
 
     if not user.is_authenticated:
         return redirect('main:login')
@@ -30,18 +32,17 @@ def signup_view(request):
     return render(request, "index.html")
     
 
-def planner(request):
+def planner_view(request):
     try:
         user = request.user
         creds = user.get_and_refresh_credentials()
         if creds.refresh_token:
             return render(request, "index.html")
         else:
-            return render(request, "index.html", status=500)
+            return render(request, "index.html", status=403)
     
     except Exception as e:
-        return JsonResponse({"error": 'e'})
-        # return redirect(reverse("auth:refresh_permissions"))
+        return render(request, "index.html", status=500)
 
 
 def tasks_view(request):
@@ -61,8 +62,13 @@ def google_callback(request):
         url_with_params = f"{google_callback_url}?{urlencode(params)}"
         return HttpResponseRedirect(url_with_params)
     
-    if callback_type in ['refresh_permissions', 'login']:
-        google_callback_url = reverse("auth:google_oauth")
+    if callback_type == 'register':
+        google_callback_url = reverse("auth:register_callback")
+        url_with_params = f"{google_callback_url}?{urlencode(params)}"
+        return HttpResponseRedirect(url_with_params)
+    
+    if callback_type == 'login':
+        google_callback_url = reverse("auth:login_callback")
         url_with_params = f"{google_callback_url}?{urlencode(params)}"
         return HttpResponseRedirect(url_with_params)
     

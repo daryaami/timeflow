@@ -9,8 +9,7 @@ import requests
 from django.utils import timezone
 from datetime import datetime, timedelta
 from app import settings
-
-time_margin = timedelta(minutes=settings.TOKEN_EXPIRY_MARGIN)
+from django.db.models import UniqueConstraint
 
 
 class CustomUserManager(BaseUserManager):
@@ -57,33 +56,39 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         try:
             user_credentials = GoogleCredentials.objects.get(user=self)
             if user_credentials.refresh_token:
-                if user_credentials.access_token_expiry < timezone.now():
+                if user_credentials.expiry < timezone.now():
                     try:
                         # Refresh the access token
                         refresh_request = requests.post(
-                                settings.TOKEN_URI,
-                                data={
-                                    "client_id": user_credentials.client_id,
-                                    "client_secret": user_credentials.client_secret,
-                                    "refresh_token": user_credentials.refresh_token,
-                                    "grant_type": "refresh_token",
-                                },
-                            )
-                        
+                            settings.TOKEN_URI,
+                            data={
+                                "client_id": user_credentials.client_id,
+                                "client_secret": user_credentials.client_secret,
+                                "refresh_token": user_credentials.refresh_token,
+                                "grant_type": "refresh_token",
+                            },
+                        )
+
                         if refresh_request.status_code != 200:
-                            return ValueError(f"Failed to refresh token: {refresh_request.status_code}, {refresh_request.text}")
+                            return ValueError(
+                                f"Failed to refresh token: {refresh_request.status_code}, {refresh_request.text}"
+                            )
 
                         new_credentials = refresh_request.json()
 
-                        user_credentials.access_token = new_credentials.get("access_token")
-                        user_credentials.access_token_expiry = timezone.now() + timedelta(seconds=new_credentials["expires_in"])
+                        user_credentials.access_token = new_credentials.get(
+                            "access_token"
+                        )
+                        user_credentials.expiry = timezone.now() + timedelta(
+                            seconds=new_credentials["expires_in"]
+                        )
                         user_credentials.save()
 
                     except requests.RequestException as e:
                         return ValueError(f"RequestException: {str(e)}")
                     except Exception as e:
                         return ValueError(f"Exception: {str(e)}")
-                    
+
                 # Create and return credentials
                 credentials = Credentials(
                     token=user_credentials.access_token,
@@ -93,21 +98,26 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
                     client_secret=user_credentials.client_secret,
                     scopes=user_credentials.scopes.split(","),
                 )
-                
+
                 return credentials
 
             else:
-                return ValueError("User credentials not found or refresh token missing.")
-    
+                return ValueError(
+                    "User credentials not found or refresh token missing."
+                )
+
         except GoogleCredentials.DoesNotExist:
             return ValueError("User credentials not found.")
 
     def get_calendars(self):
         return UserCalendar.objects.filter(user=self)
     
+    def get_primary_calendar(self):
+        return UserCalendar.objects.get(user=self, primary=True)
+
     def get_user_hours_list(self):
         return Hours.objects.filter(user=self)
-    
+
     def get_profile_json(self):
         profile_info = {
             "email": self.email,
@@ -117,7 +127,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             "time_zone": self.time_zone,
         }
         return profile_info
-    
+
     def __str__(self):
         return self.email
 
@@ -133,10 +143,12 @@ class GoogleCredentials(models.Model):
     client_id = models.CharField(max_length=255)
     client_secret = models.CharField(max_length=255)
     scopes = models.CharField(max_length=255)
-    access_token_expiry = models.DateTimeField(null=True, blank=True)
+    expiry = models.DateTimeField(null=True, blank=True)
 
-    def is_valid(self):
-        return self.access_token_expiry > timezone.now() - time_margin
+    def is_valid(self) -> bool:
+        return self.expiry and self.expiry > timezone.now() + timedelta(
+            minutes=settings.TOKEN_EXPIRY_MARGIN
+        )
 
     def __str__(self):
         return "%s (id %s)" % (self.user.email, self.pk)
@@ -153,6 +165,14 @@ class UserCalendar(models.Model):
 
     class Meta:
         db_table = "user_calendars"
+        constraints = [
+            UniqueConstraint(fields=["user", "summary"], name="unique_user_summary"),
+            UniqueConstraint(
+                fields=["user"],
+                condition=models.Q(primary=True),
+                name="unique_primary_calendar_per_user",
+            ),
+        ]
 
     def __str__(self):
         return "%s (id %s)" % (self.summary, self.pk)
@@ -168,9 +188,7 @@ class Hours(models.Model):
         default=None,
     )
     name = models.CharField(max_length=255)
-    intervals = (
-        models.JSONField()
-    )  
+    intervals = models.JSONField()
     # Пример: {"Monday": [{"start": "12:00", "end": "14:00"}, {"start": "16:00", "end": "18:00"}], "Wednesday": [{"start": "13:00", "end": "19:00"}]}
 
     def to_json(self):

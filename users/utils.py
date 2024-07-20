@@ -20,15 +20,27 @@ def get_hours_by_id(id):
     return Hours.objects.get(id=id)
 
 
-def create_user_custom_hours(user, calendar):
+def create_user_custom_hours(user):
     '''Creates default hours for created user, calendar set to Primary'''
     personal_hours = Hours.objects.filter(user=user, name="Personal Hours").first()
     work_hours = Hours.objects.filter(user=user, name="Work Hours").first()
     try:
+        primary_calendar = user.get_primary_calendar()
         if not work_hours:
-            work_hours = Hours.objects.create(user=user, name="Work Hours", calendar=calendar, intervals=CUSTOM_WORK_INTERVALS)
+            work_hours = Hours.objects.create(user=user, name="Work Hours", calendar=primary_calendar, intervals=CUSTOM_WORK_INTERVALS)
         if not personal_hours:
-            personal_hours = Hours.objects.create(user=user, name="Personal Hours", calendar=calendar, intervals=CUSTOM_PERSONAL_INTERVALS)
+            personal_hours = Hours.objects.create(user=user, name="Personal Hours", calendar=primary_calendar, intervals=CUSTOM_PERSONAL_INTERVALS)
         return [personal_hours.to_json(), work_hours.to_json()]
     except Exception as e:
         raise ValueError(f"Error: {e}")
+    
+
+def set_user_timezone_from_primary_calendar(user):
+    try:
+        primary_calendar = user.get_primary_calendar()
+        user_timezone = primary_calendar["timeZone"]
+        user.time_zone = user_timezone
+        user.save()
+        return True
+    except Exception as e:
+        return False

@@ -10,174 +10,217 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 
 from users.models import GoogleCredentials, UserCalendar, CustomUser
-from users.utils import create_user_custom_hours
+from users.utils import create_user_custom_hours, set_user_timezone_from_primary_calendar
+from .utils import (
+    create_flow,
+    get_userinfo_from_endpoint,
+    register_new_user,
+    set_user_calendars,
+)
 
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-
-
-def _create_flow(state=None):
-    flow = Flow.from_client_secrets_file(
-        settings.GOOGLE_CLIENT_SECRETS_FILE, scopes=settings.SCOPES, state=state)
-    flow.redirect_uri = settings.REDIRECT_URI
-    return flow
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 
 def log_in(request):
-    flow = _create_flow()
+    flow = create_flow()
 
     authorization_url, state = flow.authorization_url(
-        access_type='offline',
+        access_type="offline",
     )
 
-    request.session['state'] = state
-    request.session['type'] = 'login'
+    request.session["state"] = state
+    request.session["type"] = "login"
     return redirect(authorization_url)
+
+
+def login_callback(request):
+    print("hello")
+    state = request.session["state"]
+
+    flow = create_flow(state=state)
+    flow.fetch_token(authorization_response=request.get_full_path())
+    credentials = flow.credentials
+
+    # Использование userinfo endpoint для получения информации о пользователе
+    user_info = get_userinfo_from_endpoint(credentials=credentials)
+    email = user_info["email"]
+
+    try:
+        user = CustomUser.objects.get(email=email)
+        refreshed_creds = user.get_and_refresh_credentials()
+        user_credentials = GoogleCredentials.objects.get(user=user)
+
+        if refreshed_creds and user_credentials.is_valid():
+            login(request, user)
+            return redirect("main:planner")
+        else:
+            redirect("auth:refresh_permissions")
+        
+    except CustomUser.DoesNotExist:
+        redirect("auth:register")
+
+    except GoogleCredentials.DoesNotExist:
+        redirect("auth:refresh_permissions")
 
 
 def register(request):
-    flow = flow = _create_flow()
+    flow = flow = create_flow()
 
     authorization_url, state = flow.authorization_url(
-        access_type='offline',
-        prompt='consent',
+        access_type="offline",
+        prompt="consent",
     )
 
-    request.session['state'] = state
-    request.session['type'] = 'register'
+    request.session["state"] = state
+    request.session["type"] = "register"
     return redirect(authorization_url)
+
+def register_callback(request):
+    state = request.session["state"]
+
+    flow = create_flow(state=state)
+    flow.fetch_token(authorization_response=request.get_full_path())
+    credentials = flow.credentials
+
+    # Использование userinfo endpoint для получения информации о пользователе
+    user_info = get_userinfo_from_endpoint(credentials=credentials)
+    email = user_info["email"]
+
+    try:
+        user = CustomUser.objects.get(email=email)
+        return redirect("auth:log_in")
+    except CustomUser.DoesNotExist:
+        user_created = register_new_user(user_info=user_info)
+        if not user_created[1]:
+            raise ValueError("Could now register user.")
+        new_user = user_created[0]
+
+        # Добавить выбор календарей
+        set_user_calendars(user=new_user, credentials=credentials)
+
+        # Установка часового пояса пользователя по основному календарю - вынести в функцию
+        set_user_timezone_from_primary_calendar(user=user)
+
+        # Создание базовых часов пользователя -дефолтный календарь основной
+        create_user_custom_hours(user=user)
+
+        login(request, user)
+        return redirect("main:planner")
+
+    except Exception as e:
+        return e
+
 
 
 def refresh_permissions(request):
-    flow = _create_flow()
+    flow = create_flow()
 
     authorization_url, state = flow.authorization_url(
-        access_type='offline',
-        prompt='consent',
+        access_type="offline",
+        prompt="consent",
     )
 
-    request.session['state'] = state
-    request.session['type'] = 'refresh_permissions'
+    request.session["state"] = state
+    request.session["type"] = "refresh_permissions"
     return redirect(authorization_url)
 
 
 def refresh_permissions_callback(request):
-    state = request.session['state']
-    authorization_response = request.get_full_path()
+    state = request.session["state"]
+    flow = create_flow(state=state)
 
-    flow = flow = _create_flow(state=state)
-
-    flow.fetch_token(authorization_response=authorization_response)
+    flow.fetch_token(authorization_response=request.get_full_path())
     credentials = flow.credentials
 
     # Использование userinfo endpoint для получения информации о пользователе - вынести в функцию
-    params = {'alt': 'json', 'access_token': credentials.token}
-    response = requests.get(settings.USERINFO_ENDPOINT, params=params)
-    user_info = response.json()
+    user_info = get_userinfo_from_endpoint(credentials=credentials)
+    email = user_info["email"]
 
-    email = user_info['email']
+    if not user.image:
+        user.image = user_info['image']
 
     try:
         user = CustomUser.objects.get(email=email)
 
-        GoogleCredentials.objects.update_or_create(user=user, defaults={
-        'access_token': credentials.token,
-        'refresh_token': credentials.refresh_token,
-        'token_uri': credentials.token_uri,
-        'client_id': credentials.client_id,
-        'client_secret': credentials.client_secret,
-        'scopes': ','.join(credentials.scopes),
-        'access_token_expiry': credentials.expiry
-        })
-
-        primary_calendar = UserCalendar.objects.filter(primary=True).first()
-
-        if not primary_calendar:
-            # Здесь отправить на страницу выбора кадендарей
-            calendar_service = build('calendar', 'v3', credentials=credentials)
-            calendars = calendar_service.calendarList().list().execute()
-            
-            for calendar in calendars['items']:
-                UserCalendar.objects.update_or_create(user=user, calendar_id=calendar['id'], defaults={'summary': calendar['summary'], 'primary': calendar.get('primary', False)})
-
-            primary_calendar = UserCalendar.objects.get(primary=True)
-            
-        create_user_custom_hours(user=user, calendar=primary_calendar)
+        GoogleCredentials.objects.update_or_create(
+            user=user,
+            defaults={
+                "access_token": credentials.token,
+                "refresh_token": credentials.refresh_token,
+                "token_uri": credentials.token_uri,
+                "client_id": credentials.client_id,
+                "client_secret": credentials.client_secret,
+                "scopes": ",".join(credentials.scopes),
+                "expiry": credentials.expiry,
+            },
+        )
 
         login(request, user)
-        return redirect('main:index')
+        return redirect("main:index")
+    
+    except CustomUser.DoesNotExist:
+        return redirect("auth:register")
 
     except Exception as e:
-        raise ValueError(f'Something went wrong: {e}')
+        raise ValueError(f"Something went wrong: {e}")
 
 
 def google_oauth(request):
-    state = request.session['state']
-    authorization_response = request.get_full_path()
+    state = request.session["state"]
 
-    flow = Flow.from_client_secrets_file(
-        settings.GOOGLE_CLIENT_SECRETS_FILE, scopes=settings.SCOPES, state=state)
-    flow.redirect_uri = settings.REDIRECT_URI
-
-    flow.fetch_token(authorization_response=authorization_response)
+    flow = create_flow(state=state)
+    flow.fetch_token(authorization_response=request.get_full_path())
     credentials = flow.credentials
 
-    # Использование userinfo endpoint для получения информации о пользователе - вынести в функцию
-    params = {'alt': 'json', 'access_token': credentials.token}
-    response = requests.get(settings.USERINFO_ENDPOINT, params=params)
-    user_info = response.json()
-
-    email = user_info['email']
+    # Использование userinfo endpoint для получения информации о пользователе
+    user_info = get_userinfo_from_endpoint(credentials=credentials)
+    email = user_info["email"]
 
     try:
         user = CustomUser.objects.get(email=email)
+        refreshed_creds = user.get_and_refresh_credentials()
+        user_credentials = GoogleCredentials.objects.get(user=user)
 
-        user_credentials = user.get_and_refresh_user_credentials()
-
-        if user_credentials:
-            # Log in the user and redirect to planner
+        if refreshed_creds and user_credentials.is_valid():
             login(request, user)
-            return redirect('main:planner')
+            return redirect("main:planner")
         else:
-            redirect("auth:register")
-
+            redirect("auth:refresh_permissions")
+        
     except CustomUser.DoesNotExist:
-        if credentials.refresh_token:
-            name = user_info['name']
-            image_url = user_info.get('picture', '')
+        user_created = register_new_user(user_info=user_info)
+        if not user_created[1]:
+            raise ValueError("Could now register user.")
 
-            user, created = CustomUser.objects.get_or_create(email=email, defaults={'name': name, 'image': image_url})
-
-            if created:
-                user.set_password(CustomUser.objects.make_random_password())
-                user.save()
-
-    if not user and not credentials.refresh_token:
-        return redirect("auth:register")
+    except GoogleCredentials.DoesNotExist:
+        redirect("auth:refresh_permissions")
 
     # Update or create GoogleCredentials
-    GoogleCredentials.objects.update_or_create(user=user, defaults={
-        'access_token': credentials.token,
-        'refresh_token': credentials.refresh_token,
-        'token_uri': credentials.token_uri,
-        'client_id': credentials.client_id,
-        'client_secret': credentials.client_secret,
-        'scopes': ','.join(credentials.scopes),
-        'access_token_expiry': credentials.expiry
-    })
+    new_credentials = GoogleCredentials.objects.update_or_create(
+        user=user,
+        defaults={
+            "access_token": credentials.token,
+            "refresh_token": credentials.refresh_token,
+            "token_uri": credentials.token_uri,
+            "client_id": credentials.client_id,
+            "client_secret": credentials.client_secret,
+            "scopes": ",".join(credentials.scopes),
+            "expiry": credentials.expiry,
+        },
+    )
 
-    calendar_service = build('calendar', 'v3', credentials=credentials)
-    calendars = calendar_service.calendarList().list().execute()
-    
-    for calendar in calendars['items']:
-        UserCalendar.objects.update_or_create(user=user, calendar_id=calendar['id'], defaults={'summary': calendar['summary'], 'primary': calendar.get('primary', False)})
+    if not new_credentials[1]:
+        raise ValueError("Could not update or create user credentials.")
 
-    primary_calendar = UserCalendar.objects.get(primary=True)
-    
-    user_timezone = primary_calendar['timeZone']
-    user.time_zone = user_timezone
-    user.save()
+    # Добавить выбор календарей
+    set_user_calendars(user=user, credentials=credentials)
 
-    create_user_custom_hours(user=user, calendar=primary_calendar)
+    # Установка часового пояса пользователя по основному календарю - вынести в функцию
+    set_user_timezone_from_primary_calendar(user=user)
 
+    # Создание базовых часов пользователя
+    create_user_custom_hours(user=user)
+
+    # Вход пользователя в Planner
     login(request, user)
-    return redirect('main:planner')
+    return redirect("main:planner")

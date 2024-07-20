@@ -1,0 +1,16 @@
+.input {
+
+  &__input {
+    @include light-16;
+    outline: none;
+    border: 1px solid $light-grey;
+    border-radius: size(5px);
+    height: size(42px);
+    display: flex;
+    align-items: center;
+    color: $basic-dark;
+    width: 100%;
+    padding-left: size(14px);
+    padding-right: size(16px); 
+  }
+}

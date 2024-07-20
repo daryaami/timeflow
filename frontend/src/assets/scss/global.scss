@@ -6,6 +6,7 @@
 @import './mixins/icons.scss';
 @import './mixins/resets.scss';
 
+
 @view-transition {
   navigation: auto;
 }
@@ -56,3 +57,5 @@ a {
   clip: rect(0 0 0 0);
   overflow: hidden;
 }
+
+@import './blocks/input.scss';

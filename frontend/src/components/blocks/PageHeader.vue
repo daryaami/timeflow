@@ -1,4 +1,5 @@
 <script setup>
+import NewTaskBlockVue from './new-task/NewTaskBlock.vue';
 import SearchBlock from './SearchBlock.vue'
 
 const props = defineProps({
@@ -11,7 +12,7 @@ const props = defineProps({
 <template>
   <div class="page-header">
     <!-- <h1>{{ title }}</h1> -->
-    <button class="page-header__add-task">+ New Task</button>
+    <new-task-block-vue />
     <search-block />
   </div>
 </template>
@@ -26,12 +27,5 @@ const props = defineProps({
   width: 100%;
   padding: 20px 17px;
   border-bottom: 1px solid $light-lines;
-
-  &__add-task {
-    @include reset-button;
-    @include hover {
-      color: $light-grey;
-    }
-  }  
 }
 </style>

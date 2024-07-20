@@ -1,6 +1,7 @@
 venv/
 .pylintrc
 __pycache__/
+migrations/
 
 .vscode
 .idea
@@ -13,10 +14,7 @@ media/
 .env
 credentials.json
 
-habits/migrations
-planner/migrations
-tasks/migrations
-users/migrations
+
 
 
 # Logs

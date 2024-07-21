@@ -17,6 +17,19 @@
     padding-right: size(16px); 
     box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.2);
     background-color: #ffffff;
+
+    @include hover {
+      background-color: $dark-white;
+
+      & + .input__label {
+        background: linear-gradient(to top, $dark-white 0%, $dark-white 50%, transparent 50%, transparent 100%);
+      }
+    }
+
+    &:focus {
+      border-color: $blue-attention; 
+      background-color: #ffffff;
+    }
   }
 
   &__label {
@@ -28,6 +41,6 @@
     left: size(16px);
     top: 0;
     transform: translateY(-50%);
-    background: linear-gradient(to top, #fcfcfc 0%, #fcfcfc 50%, transparent 50%, transparent 100%);
+    background: linear-gradient(to top, #ffffff 0%, #ffffff 50%, transparent 50%, transparent 100%);
   }
 }

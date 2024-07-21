@@ -2,7 +2,9 @@
 import DurationInputVue from "./DurationInput.vue";
 import PrioritySelectVue from "./PrioritySelect.vue";
 import CheckboxVue from "../form/Checkbox.vue";
+import HoursSelectVue from "./HoursSelect.vue";
 import { ref } from "vue";
+
 
 let name;
 
@@ -55,6 +57,8 @@ const submitHandler = (e) => {
         v-model="maxDuration"
       />
     </div>
+
+    <HoursSelectVue/>
     <button class="new-task-form__button">Create</button>
   </form>
 </template>
@@ -103,12 +107,6 @@ const submitHandler = (e) => {
 
     &::placeholder {
       color: $light-grey;
-    }
-
-    &:active,
-    &:focus,
-    &:hover {
-      border-color: $blue-attention; 
     }
   }
 

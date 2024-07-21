@@ -17,7 +17,9 @@ def create_new_user_task(user, **params):
                             due_date=params['due_date'],
                             hours=params['hours'],
                             user=user,
-                            private=params['private'],)
+                            private=params['private'],
+                            color=params['color']
+                            )
         return task
     except Exception as e:
         raise ValueError(f"Failed to create a new task: Exception {e}")

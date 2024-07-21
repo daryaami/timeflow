@@ -2,6 +2,7 @@ venv/
 .pylintrc
 __pycache__/
 migrations/
+fixtures/
 
 .vscode
 .idea
@@ -13,7 +14,10 @@ db.sqlite3
 media/
 .env
 credentials.json
-
+dump_data.py
+load_data.py
+createsuperuser.py
+createcolors.py
 
 
 

@@ -64,11 +64,11 @@ INSTALLED_APPS = [
     "django.contrib.postgres",
     
     "main",
+    "users",
     "planner",
     "habits",
     "tasks",
     "google_auth",
-    "users",
     "scheduler",
 ]
 
@@ -143,12 +143,23 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Europe/Moscow"
 
 USE_I18N = True
 
+USE_L10N = True
+
 USE_TZ = True
 
+# Определение поддерживаемых языков
+LANGUAGES = [
+    ('en', 'English'),
+    ('ru', 'Русский'),
+]
+
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, 'locale'),
+]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/

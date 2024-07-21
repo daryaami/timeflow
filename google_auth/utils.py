@@ -47,7 +47,7 @@ def register_new_user(user_info: dict) -> tuple[CustomUser, bool]:
     return (user, False)
 
 
-def set_user_calendars(user, credentials, calendars_choice=None):
+def set_user_calendars_and_timezone(user, credentials, calendars_choice=None):
     # Добавить выбор календарей
     try:
         calendar_service = build('calendar', 'v3', credentials=credentials)
@@ -55,10 +55,18 @@ def set_user_calendars(user, credentials, calendars_choice=None):
 
         # calendars_to_set = [calendar for calendar in calendars['items'] if calendar["summary"] in calendars_choice]
         calendars_to_set = calendars['items']
+
+        if not user.time_zone:
+            primary_calendar = calendar_service.calendars().get(calendarId='primary').execute()
+            time_zone = primary_calendar.get('timeZone')
+
+            user.time_zone = time_zone
+            user.save()
         
         for calendar in calendars_to_set:
             try:
-                UserCalendar.objects.update_or_create(user=user, calendar_id=calendar['id'], defaults={'summary': calendar['summary'], 'primary': calendar.get('primary', False)})
+                new_calendar = UserCalendar.objects.update_or_create(user=user, calendar_id=calendar['id'], defaults={'summary': calendar['summary'], 'primary': calendar.get('primary', False), 'background_color':calendar.get('backgroundColor', None), 'foreground_color':calendar.get('foregroundColor', None)})
+                print(calendar)
             except IntegrityError as e:
                 print(f"Integrity error at {calendar['summary']} for user with email {user.email}. Calendar with this summary already exists.")
         return True

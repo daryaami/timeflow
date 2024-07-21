@@ -33,14 +33,3 @@ def create_user_custom_hours(user):
         return [personal_hours.to_json(), work_hours.to_json()]
     except Exception as e:
         raise ValueError(f"Error: {e}")
-    
-
-def set_user_timezone_from_primary_calendar(user):
-    try:
-        primary_calendar = user.get_primary_calendar()
-        user_timezone = primary_calendar["timeZone"]
-        user.time_zone = user_timezone
-        user.save()
-        return True
-    except Exception as e:
-        return False

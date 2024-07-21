@@ -9,6 +9,7 @@ from .models import Task
 from .utils import get_user_tasks, create_new_user_task
 from users.utils import get_hours_by_id
 from users.models import Hours
+from main.models import Color
 
 # Create your views here.
 @login_required
@@ -31,6 +32,7 @@ def create_task(request):
                                 "schedule_after"=task.schedule_after or None,
                                 "due_date": task.due_date,
                                 "hours_id": task.hours.pk,
+                                "color_id": int,
                                 "private": task.private,
                                 "notes": task.notes,
                                 }"""
@@ -42,8 +44,9 @@ def create_task(request):
         
         schedule_after = datetime.fromisoformat(params['schedule_after']) if "schedule_after" in params else datetime.now()
         private = params['private'] if "private" in params else True
-        min_duration = int(params['min_duration']) if 'min_duration' in params else None
-        max_duration = int(params['max_duration']) if 'max_duration' in params else None
+        min_duration = int(params['min_duration']) if 'min_duration' in params and params['min_duration'] else None
+        max_duration = int(params['max_duration']) if 'max_duration' in params and params['min_duration'] else None
+        color = Color.objects.get(id=params['color_id'])if 'color_id' in params and params['color_id'] else None
 
         due_date_aware = user_timezone.localize(datetime.fromisoformat(params['due_date']))
 
@@ -56,7 +59,9 @@ def create_task(request):
                 schedule_after=schedule_after,
                 due_date=due_date_aware,
                 hours=task_hours,
-                private=private,)
+                private=private,
+                color=color,
+                )
             
         return JsonResponse({"created": True, "task": task.to_json()})
         

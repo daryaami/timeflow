@@ -7,6 +7,14 @@ class Color(models.Model):
     name = models.CharField(max_length=255)
     hex = models.CharField(max_length=8)
 
+    def to_json(self):
+        color_json = {
+            "id": self.color_id,
+            "name": self.name,
+            "hex": self.hex
+        }
+        return color_json
+
     def __str__(self):
         return "%s (id %s)" % (self.name, self.pk)
 

@@ -10,12 +10,12 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 
 from users.models import GoogleCredentials, UserCalendar, CustomUser
-from users.utils import create_user_custom_hours, set_user_timezone_from_primary_calendar
+from users.utils import create_user_custom_hours
 from .utils import (
     create_flow,
     get_userinfo_from_endpoint,
     register_new_user,
-    set_user_calendars,
+    set_user_calendars_and_timezone,
 )
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -53,13 +53,16 @@ def login_callback(request):
             login(request, user)
             return redirect("main:planner")
         else:
-            redirect("auth:refresh_permissions")
+            return redirect("auth:refresh_permissions")
         
     except CustomUser.DoesNotExist:
-        redirect("auth:register")
+        return redirect("auth:register")
 
     except GoogleCredentials.DoesNotExist:
-        redirect("auth:refresh_permissions")
+        return redirect("auth:refresh_permissions")
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)})
 
 
 def register(request):
@@ -73,6 +76,7 @@ def register(request):
     request.session["state"] = state
     request.session["type"] = "register"
     return redirect(authorization_url)
+
 
 def register_callback(request):
     state = request.session["state"]
@@ -111,12 +115,9 @@ def register_callback(request):
         )
 
         # Добавить выбор календарей
-        set_user_calendars(user=user, credentials=credentials)
+        set_user_calendars_and_timezone(user=user, credentials=credentials)
 
-        # Установка часового пояса пользователя по основному календарю - вынести в функцию
-        set_user_timezone_from_primary_calendar(user=user)
-
-        # Создание базовых часов пользователя -дефолтный календарь основной
+        # Создание базовых часов пользователя - дефолтный календарь основной
         create_user_custom_hours(user=user)
 
     except Exception as e:
@@ -152,9 +153,6 @@ def refresh_permissions_callback(request):
     user_info = get_userinfo_from_endpoint(credentials=credentials)
     email = user_info["email"]
 
-    if not user.image:
-        user.image = user_info['image']
-
     try:
         user = CustomUser.objects.get(email=email)
 
@@ -171,6 +169,13 @@ def refresh_permissions_callback(request):
             },
         )
 
+        if not user.image:
+            user.image = user_info['picture']
+            user.save()
+
+        set_user_calendars_and_timezone(user, credentials=credentials)
+        create_user_custom_hours(user)
+
         login(request, user)
         return redirect("main:index")
     
@@ -179,7 +184,7 @@ def refresh_permissions_callback(request):
 
     except Exception as e:
         raise ValueError(f"Something went wrong: {e}")
-
+    
 
 def google_oauth(request):
     state = request.session["state"]
@@ -229,10 +234,7 @@ def google_oauth(request):
         raise ValueError("Could not update or create user credentials.")
 
     # Добавить выбор календарей
-    set_user_calendars(user=user, credentials=credentials)
-
-    # Установка часового пояса пользователя по основному календарю - вынести в функцию
-    set_user_timezone_from_primary_calendar(user=user)
+    set_user_calendars_and_timezone(user=user, credentials=credentials)
 
     # Создание базовых часов пользователя
     create_user_custom_hours(user=user)
@@ -240,3 +242,20 @@ def google_oauth(request):
     # Вход пользователя в Planner
     login(request, user)
     return redirect("main:planner")
+
+
+# def register(request):
+#     flow = flow = create_flow()
+
+#     authorization_url, state = flow.authorization_url(
+#         access_type="offline",
+#         prompt="consent",
+#     )
+
+#     request.session["state"] = state
+#     request.session["type"] = "register"
+#     return redirect(authorization_url)
+
+# def create_superuser_profile(request):
+#     user = request.user
+

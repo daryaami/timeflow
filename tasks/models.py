@@ -3,21 +3,25 @@ from django.db import models
 from datetime import datetime, timedelta
 from users.models import CustomUser, Hours
 from django.utils import timezone
-from utils import Priority, Color, PRIORITY_CHOICES
+from utils import Priority, PRIORITY_CHOICES
+from main.models import Color
+
 
 # Create your models here.
 class Task(models.Model):
 
     name = models.CharField(max_length=255)
-    priority = models.CharField(choices=PRIORITY_CHOICES, default=Priority.HIGH, max_length=20)
+    priority = models.CharField(
+        choices=PRIORITY_CHOICES, default=Priority.HIGH, max_length=20
+    )
     duration = models.IntegerField(default=60)
-    min_duration = models.IntegerField(default=None, null=True)
-    max_duration = models.IntegerField(default=None, null=True)
+    min_duration = models.IntegerField(default=None, null=True, blank=True)
+    max_duration = models.IntegerField(default=None, null=True, blank=True)
     schedule_after = models.DateTimeField(null=True, default=None)
     due_date = models.DateTimeField()
     time_spent = models.DurationField(null=True, default=timedelta(minutes=0))
     private = models.BooleanField(default=True)
-    color = models.CharField(max_length=10, null=True, default=None)
+    color = models.ForeignKey(Color, on_delete=models.RESTRICT, null=True, blank=True, default=None)
     notes = models.TextField(blank=True)
 
     user = models.ForeignKey(
@@ -38,8 +42,16 @@ class Task(models.Model):
             "schedule_after": self.schedule_after,
             "due_date": self.due_date,
             "private": self.private,
-            "color": self.private,
-            "hours": {"id": self.hours.pk, "name": self.hours.name, "intervals": self.hours.intervals} if self.hours else None,
+            "color_hex": self.color.hex if self.color else None,
+            "hours": (
+                {
+                    "id": self.hours.pk,
+                    "name": self.hours.name,
+                    "intervals": self.hours.intervals,
+                }
+                if self.hours
+                else None
+            ),
             "time_spent": self.time_spent,
         }
         return taks_json

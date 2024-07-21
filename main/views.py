@@ -9,16 +9,13 @@ from tasks.utils import get_user_tasks
 
 scopes = settings.SCOPES
 
-from utils import create_colors
-
 def index(request):
-    # create_colors()
     user = request.user
     
     try:
         email = user.email
     except AttributeError:
-        return redirect("main:signup")
+        return redirect("auth:log_in")
 
     if not user.is_authenticated:
         return redirect('main:login')
@@ -52,6 +49,7 @@ def tasks_view(request):
     user = request.user
     tasks = get_user_tasks(user)
     context = {'tasks': tasks}
+    return JsonResponse(context)
     return render(request, "tasks/tasks.html", context=context)
 
 

@@ -10,6 +10,7 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from app import settings
 from django.db.models import UniqueConstraint
+from main.models import Color
 
 
 class CustomUserManager(BaseUserManager):
@@ -162,6 +163,9 @@ class UserCalendar(models.Model):
     calendar_id = models.CharField(max_length=255)
     primary = models.BooleanField(default=False)
     summary = models.CharField(max_length=255)
+    color_id = models.CharField(max_length=2, null=True)
+    background_color = models.CharField(max_length=8, null=True)
+    foreground_color = models.CharField(max_length=8, null=True)
 
     class Meta:
         db_table = "user_calendars"

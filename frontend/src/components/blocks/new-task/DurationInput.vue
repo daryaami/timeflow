@@ -1,7 +1,9 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue';
 
-const duration = ref(0);
+const props = defineProps(['label', 'buttons'])
+
+const duration = defineModel();
 const durationString = ref(null)
 const forceUpdate = ref(0);
 
@@ -90,7 +92,7 @@ const inputBlurHandler = () => {
   forceUpdate.value += 1;
 }
 
-onMounted(() => duration.value = 90)
+onMounted(() => forceUpdate.value += 1)
 </script>
 
 <template>
@@ -98,9 +100,9 @@ onMounted(() => duration.value = 90)
   <input type="text" class="input__input" v-model="durationString"
     @blur="inputBlurHandler"
   >
-  <span class="input__label">Duration</span>
+  <span class="input__label">{{ label }}</span>
   
-  <div class="duration-input__buttons">
+  <div class="duration-input__buttons" v-if="buttons">
     <button class="duration-input__button duration-input__button--minus"
       @click.prevent="decreaseDuration"
     ></button>

@@ -1,8 +1,15 @@
 <script setup>
 import DurationInputVue from "./DurationInput.vue";
 import PrioritySelectVue from "./PrioritySelect.vue";
+import CheckboxVue from "../form/Checkbox.vue";
+import { ref } from "vue";
 
 let name;
+
+const isSplited = ref(false);
+const duration = ref(90);
+const minDuration = ref(30);
+const maxDuration = ref(90);
 
 const submitHandler = (e) => {
   e.preventDefault();
@@ -25,9 +32,29 @@ const submitHandler = (e) => {
     </div>
 
     <div class="new-task-form__row">
-      <DurationInputVue />
+      <DurationInputVue
+        label="Duration"
+        :buttons="true"
+        v-model="duration"
+      />
+      <CheckboxVue 
+        class="new-task-form__split-check"
+        label="Split up"
+        v-model="isSplited"
+      />
     </div>
 
+    <div class="new-task-form__durations" v-if="isSplited">
+      <DurationInputVue
+        label="Min duration"
+        v-model="minDuration"
+
+      />
+      <DurationInputVue 
+        label="Max duration"
+        v-model="maxDuration"
+      />
+    </div>
     <button class="new-task-form__button">Create</button>
   </form>
 </template>
@@ -93,6 +120,15 @@ const submitHandler = (e) => {
     margin-left: auto;
     padding: size(11px) size(14px);
     border-radius: size(30px);
+  }
+
+  &__split-check {
+    margin-left: size(29px);
+  }
+
+  &__durations {
+    display: flex;
+    gap: size(10px)
   }
 }
 </style>

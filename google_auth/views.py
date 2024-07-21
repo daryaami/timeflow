@@ -92,22 +92,23 @@ def register_callback(request):
         user_created = register_new_user(user_info=user_info)
         if not user_created[1]:
             raise ValueError("Could now register user.")
-        new_user = user_created[0]
+        user = user_created[0]
 
         # Добавить выбор календарей
-        set_user_calendars(user=new_user, credentials=credentials)
+        set_user_calendars(user=user, credentials=credentials)
 
         # Установка часового пояса пользователя по основному календарю - вынести в функцию
-        set_user_timezone_from_primary_calendar(user=new_user)
+        set_user_timezone_from_primary_calendar(user=user)
 
         # Создание базовых часов пользователя -дефолтный календарь основной
-        create_user_custom_hours(user=new_user)
+        create_user_custom_hours(user=user)
 
     except Exception as e:
         return e
     
     finally:
-        login(request, new_user)
+        user = CustomUser.objects.get(email=email)
+        login(request, user)
         return redirect("main:planner")
 
 

@@ -88,7 +88,7 @@ def register_callback(request):
     try:
         user = CustomUser.objects.get(email=email)
         return redirect("auth:log_in")
-    except CustomUser.DoesNotExist:
+    except UnboundLocalError:
         user_created = register_new_user(user_info=user_info)
         if not user_created[1]:
             raise ValueError("Could now register user.")

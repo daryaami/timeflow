@@ -90,9 +90,25 @@ def register_callback(request):
         return redirect("auth:log_in")
     except CustomUser.DoesNotExist:
         user_created = register_new_user(user_info=user_info)
+
         if not user_created[1]:
             raise ValueError("Could now register user.")
+        
         user = user_created[0]
+
+        # Создать учетные данные
+        GoogleCredentials.objects.update_or_create(
+            user=user,
+            defaults={
+                "access_token": credentials.token,
+                "refresh_token": credentials.refresh_token,
+                "token_uri": credentials.token_uri,
+                "client_id": credentials.client_id,
+                "client_secret": credentials.client_secret,
+                "scopes": ",".join(credentials.scopes),
+                "expiry": credentials.expiry,
+            },
+        )
 
         # Добавить выбор календарей
         set_user_calendars(user=user, credentials=credentials)

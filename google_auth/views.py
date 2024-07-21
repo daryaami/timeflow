@@ -34,7 +34,6 @@ def log_in(request):
 
 
 def login_callback(request):
-    print("hello")
     state = request.session["state"]
 
     flow = create_flow(state=state)
@@ -109,7 +108,6 @@ def register_callback(request):
 
     except Exception as e:
         return e
-
 
 
 def refresh_permissions(request):

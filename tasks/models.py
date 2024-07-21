@@ -3,7 +3,7 @@ from django.db import models
 from datetime import datetime, timedelta
 from users.models import CustomUser, Hours
 from django.utils import timezone
-from utils import Priority, PRIORITY_CHOICES
+from utils import Priority, Color, PRIORITY_CHOICES
 
 # Create your models here.
 class Task(models.Model):
@@ -13,13 +13,11 @@ class Task(models.Model):
     duration = models.IntegerField(default=60)
     min_duration = models.IntegerField(default=None, null=True)
     max_duration = models.IntegerField(default=None, null=True)
-    schedule_after = models.DateTimeField(default=datetime.now(), null=True)
-    due_date = models.DateTimeField(default=datetime.now() + timedelta(days=3), blank=True)
+    schedule_after = models.DateTimeField(null=True, default=None)
+    due_date = models.DateTimeField()
     time_spent = models.DurationField(null=True, default=timedelta(minutes=0))
     private = models.BooleanField(default=True)
-    visibility = models.CharField(
-        max_length=200, default="Busy", null=True
-    )  # Что показывается в календаре для других людей
+    color = models.CharField(max_length=10, null=True, default=None)
     notes = models.TextField(blank=True)
 
     user = models.ForeignKey(
@@ -40,6 +38,7 @@ class Task(models.Model):
             "schedule_after": self.schedule_after,
             "due_date": self.due_date,
             "private": self.private,
+            "color": self.private,
             "hours": {"id": self.hours.pk, "name": self.hours.name, "intervals": self.hours.intervals} if self.hours else None,
             "time_spent": self.time_spent,
         }
@@ -51,11 +50,7 @@ class Task(models.Model):
 
     def save(self, *args, **kwargs):
         user_timezone = pytz.timezone(self.user.time_zone)
-        timezone.activate(user_timezone )
-        # if not self.min_duration:
-        #     self.min_duration = self.duration
-        # if not self.max_duration:
-        #     self.max_duration = self.duration
+        timezone.activate(user_timezone)
         if not self.schedule_after:
             self.schedule_after = timezone.now()
         if self.due_date < timezone.now():

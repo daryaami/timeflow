@@ -199,3 +199,18 @@ class Hours(models.Model):
 
     class Meta:
         db_table = "hours"
+
+
+class ProfileInfo(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="profileinfo")
+    task_calendar = models.ForeignKey(UserCalendar, on_delete=models.SET_DEFAULT, default=None, null=True)
+    custom_visibility = models.CharField(null=True, blank=True, default='Busy', max_length=255)
+
+    def __str__(self):
+        return "User %s profile info" % (self.user.email)
+    
+    class Meta:
+        db_table = "profileinfo"
+        constraints = [
+            UniqueConstraint(fields=["user"], name="unique_user"),
+        ]

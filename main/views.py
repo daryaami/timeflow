@@ -9,8 +9,10 @@ from tasks.utils import get_user_tasks
 
 scopes = settings.SCOPES
 
+from utils import create_colors
 
 def index(request):
+    create_colors()
     user = request.user
     
     try:

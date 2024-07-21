@@ -103,11 +103,12 @@ def register_callback(request):
         # Создание базовых часов пользователя -дефолтный календарь основной
         create_user_custom_hours(user=new_user)
 
-        login(request, new_user)
-        return redirect("main:planner")
-
     except Exception as e:
         return e
+    
+    finally:
+        login(request, new_user)
+        return redirect("main:planner")
 
 
 def refresh_permissions(request):

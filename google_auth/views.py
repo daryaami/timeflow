@@ -88,7 +88,7 @@ def register_callback(request):
     try:
         user = CustomUser.objects.get(email=email)
         return redirect("auth:log_in")
-    except UnboundLocalError:
+    except CustomUser.DoesNotExist:
         user_created = register_new_user(user_info=user_info)
         if not user_created[1]:
             raise ValueError("Could now register user.")
@@ -98,12 +98,12 @@ def register_callback(request):
         set_user_calendars(user=new_user, credentials=credentials)
 
         # Установка часового пояса пользователя по основному календарю - вынести в функцию
-        set_user_timezone_from_primary_calendar(user=user)
+        set_user_timezone_from_primary_calendar(user=new_user)
 
         # Создание базовых часов пользователя -дефолтный календарь основной
-        create_user_custom_hours(user=user)
+        create_user_custom_hours(user=new_user)
 
-        login(request, user)
+        login(request, new_user)
         return redirect("main:planner")
 
     except Exception as e:

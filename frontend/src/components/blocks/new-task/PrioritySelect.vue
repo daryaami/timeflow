@@ -124,12 +124,12 @@ const optionClickHandler = (option) => {
   }
 
   &__dropdown-item {
-    @include small-light;
+    @include light-16;
 
     & svg {
       display: block;
-      width: size(20px);
-      height: size(20px);
+      width: size(17px);
+      height: size(17px);
     }
   }
 
@@ -137,7 +137,7 @@ const optionClickHandler = (option) => {
     display: flex;
     align-items: center;
     gap: size(16px);
-    padding: size(5px) size(15px) size(6px) size(15px);
+    padding: size(9px) size(21px) size(9px) size(21px);
     width: 100%;
     cursor: pointer;
 

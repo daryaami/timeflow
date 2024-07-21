@@ -21,11 +21,11 @@ watch([duration, forceUpdate], (newValues) => {
 
 const increaseDuration = () => {
   if (duration.value < 60) {
-    duration.value += 15;
+    duration.value += 15 - duration.value % 15;
   } else if (duration.value < 120) {
-    duration.value += 30;
+    duration.value += 30 - duration.value % 30;
   } else {
-    duration.value += 60;
+    duration.value += 60 - duration.value % 60;
   }
 }
 
@@ -33,11 +33,14 @@ const decreaseDuration = () => {
   if (duration.value <= 15) return
 
   if (duration.value <= 60) {
-    duration.value -= 15;
+    const rem = duration.value % 15;
+    rem? duration.value -= rem: duration.value -= 15; 
   } else if (duration.value <= 120) {
-    duration.value -= 30;
+    const rem = duration.value % 30;
+    rem? duration.value -= rem: duration.value -= 30; 
   } else {
-    duration.value -= 60;
+    const rem = duration.value % 60;
+    rem? duration.value -= rem: duration.value -= 60; 
   }
 }
 

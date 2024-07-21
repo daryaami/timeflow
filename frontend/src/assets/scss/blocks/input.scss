@@ -6,7 +6,7 @@
     @include light-16;
     width: 100%;
     outline: none;
-    border: 1px solid $light-grey;  
+    border: 1px solid $dark-lines;  
     border-radius: size(5px);
     height: size(42px);
     display: flex;
@@ -16,6 +16,7 @@
     padding-left: size(14px);
     padding-right: size(16px); 
     box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.2);
+    background-color: #ffffff;
   }
 
   &__label {

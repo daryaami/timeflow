@@ -54,7 +54,7 @@ const openButtonHandler = () => {
       right: 0;
       padding: size(70px) size(52px) size(40px) size(42px);
       box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.3);
-      background: $white;
+      background-color: #ffffff;;
       border-radius: size(15px);
       z-index: 1000;
     }

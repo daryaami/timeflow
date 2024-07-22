@@ -1,36 +1,12 @@
 <script setup>
 import { ref } from "vue";
+import { useDropdown } from "@/components/composables/dropdown";
 import criticalPriorityIconVue from "../../icons/priorities/critical-priority-icon.vue";
 import highPriorityIconVue from "../../icons/priorities/high-priority-icon.vue";
 import mediumPriorityIconVue from "../../icons/priorities/medium-priority-icon.vue";
 import lowPriorityIconVue from "../../icons/priorities/low-priority-icon.vue";
 
-// Open
-const isDropdownOpen = ref(false);
-
-const handleClickOutside = (event) => {
-  if (!event.target.closest('.priority-select')) {
-    closeDropdown();
-  }
-}
-
-const openDropdown = () => {
-  isDropdownOpen.value = true;
-  document.addEventListener('click', handleClickOutside);
-}
-
-const closeDropdown = () => {
-  isDropdownOpen.value = false;
-  document.removeEventListener('click', handleClickOutside);
-}
-
-const buttonClickHandler = (e) => {
-  e.preventDefault();
-  isDropdownOpen.value? closeDropdown(): openDropdown(); 
-}
-
-
-// Options
+const { isDropdownOpen, dropdownClickHandler, closeDropdown } = useDropdown();
 
 const currentOption = ref(null);
 
@@ -59,30 +35,31 @@ const optionClickHandler = (option) => {
   currentOption.value = option;
   closeDropdown();
 }
-
 </script>
 
 <template>
-  <div class="priority-select">
+  <div class="priority-select dropdown-wrapper">
     <button class="priority-select__button"
-      @click="buttonClickHandler"
+      @click="dropdownClickHandler"
     >
       <component :is="currentOption.icon"></component>
     </button>
-    <ul v-if="isDropdownOpen"  class="priority-select__dropdown">
-      <li class="priority-select__dropdown-item"
-        v-for="(option, i) in priorities"
-        :key="i"
-      >
-        <div class="priority-select__dropdown-button"
-          @click.stop="optionClickHandler(option)"
-          tabindex="0"
+    <Transition name="dropdown">
+      <ul v-if="isDropdownOpen"  class="priority-select__dropdown">
+        <li class="priority-select__dropdown-item"
+          v-for="(option, i) in priorities"
+          :key="i"
         >
-          <component :is="option.icon"></component>
-          <span>{{ option.name }}</span>
-        </div>
-      </li>
-    </ul>
+          <div class="priority-select__dropdown-button"
+            @click.stop="optionClickHandler(option)"
+            tabindex="0"
+          >
+            <component :is="option.icon"></component>
+            <span>{{ option.name }}</span>
+          </div>
+        </li>
+      </ul>
+    </Transition>
   </div>
 </template>
 

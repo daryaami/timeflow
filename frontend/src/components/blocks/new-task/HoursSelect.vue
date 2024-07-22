@@ -1,32 +1,8 @@
 <script setup>
 import { ref } from "vue";
+import { useDropdown } from "@/components/composables/dropdown";
 
-// Open
-const isDropdownOpen = ref(false);  
-
-const handleClickOutside = (event) => {
-  if (!event.target.closest('.hours-select')) {
-    closeDropdown();
-  }
-}
-
-const openDropdown = () => {
-  isDropdownOpen.value = true;
-  document.addEventListener('click', handleClickOutside);
-}
-
-const closeDropdown = () => {
-  isDropdownOpen.value = false;
-  document.removeEventListener('click', handleClickOutside);
-}
-
-const buttonClickHandler = (e) => {
-  e.preventDefault();
-  isDropdownOpen.value? closeDropdown(): openDropdown(); 
-}
-
-
-// 
+const { isDropdownOpen, dropdownClickHandler, closeDropdown } = useDropdown();
 
 const currentOption = ref();
 
@@ -48,27 +24,29 @@ const optionClickHandler = (option) => {
 </script>
 
 <template>
-  <div class="hours-select input">
-    <span class="input__input"
-      @click="buttonClickHandler"
-    >{{ currentOption.name }}</span>
+  <div class="hours-select input dropdown-wrapper">
+    <div @click="dropdownClickHandler" class="input__input">
+      <span>{{ currentOption.name }}</span>
+      <div class="hours-select__arrow"
+        :class="{'rotated': isDropdownOpen}"
+      ></div>
+    </div>
     <span class="input__label">Hours</span>
-    <div class="hours-select__arrow"
-      :class="{'rotated': isDropdownOpen}"
-    ></div>
-    <ul v-if="isDropdownOpen"  class="hours-select__dropdown">
-      <li class="hours-select__dropdown-item"
-        v-for="(option, i) in hours"
-        :key="i"
-      >
-        <div class="hours-select__dropdown-button"
-          @click.stop="optionClickHandler(option)"
-          tabindex="0"
+    <Transition name="dropdown">
+      <ul v-if="isDropdownOpen"  class="hours-select__dropdown">
+        <li class="hours-select__dropdown-item"
+          v-for="(option, i) in hours"
+          :key="i"
         >
-          <span>{{ option.name }}</span>
-        </div>
-      </li>
-    </ul>
+          <div class="hours-select__dropdown-button"
+            @click.stop="optionClickHandler(option)"
+            tabindex="0"
+          >
+            <span>{{ option.name }}</span>
+          </div>
+        </li>
+      </ul>
+    </Transition>
   </div>
 </template>
 

@@ -46,7 +46,8 @@ def create_task(request):
         private = params['private'] if "private" in params else True
         min_duration = int(params['min_duration']) if 'min_duration' in params and params['min_duration'] else None
         max_duration = int(params['max_duration']) if 'max_duration' in params and params['min_duration'] else None
-        color = Color.objects.get(id=params['color_id'])if 'color_id' in params and params['color_id'] else None
+        color = Color.objects.get(id=params['colorId'])if 'color_id' in params and params['color_id'] else None
+        notes = params['notes'] if 'notes' in params else ''
 
         due_date_aware = user_timezone.localize(datetime.fromisoformat(params['due_date']))
 
@@ -61,6 +62,7 @@ def create_task(request):
                 hours=task_hours,
                 private=private,
                 color=color,
+                notes=notes,
                 )
             
         return JsonResponse({"created": True, "task": task.to_json()})

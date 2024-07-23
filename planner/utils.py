@@ -7,6 +7,23 @@ from googleapiclient.discovery import build
 from users.models import GoogleCredentials, UserCalendar
 import concurrent.futures
 from google.auth.exceptions import RefreshError
+from main.utils import get_event_color_hex
+from users.utils import get_calendar_by_id
+
+
+def get_event_dict(calendar_id, google_event):
+    calendar = get_calendar_by_id(calendar_id=calendar_id)
+    event_dict = {
+        "id": google_event['id'],
+        "summary": google_event['summary'],
+        "description": google_event['description'] if 'description' in google_event else None,
+        "color": get_event_color_hex(google_event['colorId']) if 'colorId' in google_event else calendar.background_color,
+        "start": google_event['start'],
+        "end": google_event['end'],
+        "calendar": calendar.summary,
+        "visibility": google_event["visibility"] if 'visibility' in google_event else None,
+    }
+    return event_dict
 
 
 def get_calendar_events(user_credentials, calendar_id, start_time, end_time):
@@ -21,7 +38,8 @@ def get_calendar_events(user_credentials, calendar_id, start_time, end_time):
                 singleEvents=True,
                 orderBy='startTime')
             .execute())
-        return events_result.get('items', [])
+        events = events_result.get('items', [])
+        return [get_event_dict(calendar_id=calendar_id, google_event=event) for event in events]
     
     except Exception as e:
         print(f"Error fetching events: {e}")
@@ -68,7 +86,7 @@ def get_all_events_by_weekday(user_calendars, user_credentials, date_param=None)
     
     return {"days": events_by_weekday}
 
-def create_task(user, credentials, calendar_id, event_details):
+def create_event(user, credentials, calendar_id, event_details):
     """Creates new calendar event
     Args:
         user_credentials: Credentials

@@ -33,19 +33,6 @@ def get_events(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 
-# @login_required
-# def create_event(request):
-#     user = request.user
-#     credentials = user.get_and_refresh_credentials()
-#     event_body = request.GET
-#     try:
-#         calendar_service = build('calendar', 'v3', credentials=credentials)
-#         event = calendar_service.events().insert(calendarId=calendar_id, body=event_details).execute()
-#         return event
-#     except Exception as e:
-#         return e
-
-
 @login_required
 def update_event(user_credentials, calendar_id, event_id, updated_event_details):
     try:

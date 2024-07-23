@@ -53,6 +53,7 @@ class Task(models.Model):
                 else None
             ),
             "time_spent": self.time_spent,
+            "notes": self.notes,
         }
         return taks_json
 

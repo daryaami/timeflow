@@ -167,6 +167,13 @@ class UserCalendar(models.Model):
     background_color = models.CharField(max_length=8, null=True)
     foreground_color = models.CharField(max_length=8, null=True)
 
+    def get_info_json(self):
+        info = {
+            'calendar_id': self.calendar_id,
+            'summary': self.summary
+        }
+        return info
+
     class Meta:
         db_table = "user_calendars"
         constraints = [

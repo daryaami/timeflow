@@ -10,13 +10,14 @@ from django.http import JsonResponse
 from users.models import GoogleCredentials, UserCalendar, CustomUser, Hours
 from tasks.models import Task
 from tasks.utils import get_user_tasks
+from .utils import get_user_hours_json
 
 
 def get_user_info(request):
     user = request.user
     user_info = {
         "profile": user.get_profile_json(),
-        "hours": [hours.to_json() for hours in user.get_user_hours_list()],
+        "hours": get_user_hours_json(user=user),
         "tasks": get_user_tasks(user=user),
     }
     return JsonResponse(user_info)

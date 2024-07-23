@@ -6,7 +6,7 @@ import pytz
 
 # from django.utils import timezone
 from .models import Task
-from .utils import get_user_tasks, create_new_user_task
+from .utils import get_user_tasks, create_new_user_task, create_task_event
 from users.utils import get_hours_by_id
 from users.models import Hours
 from main.models import Color
@@ -20,7 +20,15 @@ def get_tasks(request):
 
 @login_required
 def get_task_by_id(request, id):
-    return NotImplementedError()
+    user = request.user
+    try:
+        task = Task.objects.get(user=user, id=id)
+        return JsonResponse(task.to_json())
+    except Task.DoesNotExist:
+        raise ValueError("Task does not exist")
+    except Exception as e:
+        raise ValueError(f"Exception: {e}")
+
 
 def create_task(request):
     """Create a new user task. Format: {
@@ -71,3 +79,12 @@ def create_task(request):
         raise ValueError("Hours id does not match any existing objects.")
     except Exception as e:
             raise ValueError(f"{e}")
+    
+
+def test_task(request):
+    user = request.user
+    task = Task.objects.filter(user=user).last()
+    start = datetime.now()
+    end = datetime.now() + timedelta(minutes=45)
+    event = create_task_event(task, start_datetime=start, end_datetime=end)
+    return JsonResponse({"success": f'{event}'})

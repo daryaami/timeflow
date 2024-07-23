@@ -1,23 +1,24 @@
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
+
 import datetime
+import pytz
 from datetime import date, datetime, timedelta
 from googleapiclient.discovery import build
 
-from users.models import GoogleCredentials, UserCalendar
 import concurrent.futures
-from google.auth.exceptions import RefreshError
-from main.utils import get_event_color_hex
+from main.utils import get_event_colors_hex
 from users.utils import get_calendar_by_id
+from utils import Priority
 
 
 def get_event_dict(calendar_id, google_event):
     calendar = get_calendar_by_id(calendar_id=calendar_id)
+    (bc_hex, fc_hex) = get_event_colors_hex(google_event['colorId']) if 'colorId' in google_event else (calendar.background_color, calendar.foreground_color)
     event_dict = {
         "id": google_event['id'],
         "summary": google_event['summary'],
         "description": google_event['description'] if 'description' in google_event else None,
-        "color": get_event_color_hex(google_event['colorId']) if 'colorId' in google_event else calendar.background_color,
+        "background_color": bc_hex,
+        "foreground_color": fc_hex,
         "start": google_event['start'],
         "end": google_event['end'],
         "calendar": calendar.summary,
@@ -86,13 +87,31 @@ def get_all_events_by_weekday(user_calendars, user_credentials, date_param=None)
     
     return {"days": events_by_weekday}
 
-def create_event(user, credentials, calendar_id, event_details):
+def create_event(user, credentials, calendar_id, **event_details):
     """Creates new calendar event
     Args:
         user_credentials: Credentials
         calendar_id: str
         event_detailes: dict   
             {
+                user=user,
+                credentials=credentials,
+                calendar_id=calendar.calendar_id,
+                summary=summary,
+                start=start_datetime,
+                end=end_datetime,
+                description=description,
+                color_id=color_id,
+                timezone=timezone,
+                visibility=visibility,
+                timeflow_touched=timeflow_touched,
+                timeflow_event_type=timeflow_event_type,
+                timeflow_event_id=timeflow_event_id,
+                timeflow_control_id=timeflow_control_id,
+                timeflow_event_priority=timeflow_event_priority,
+                source_url=source_url,
+                source_title=source_title
+
                 "summary": "Summary",
                 "description": "<i>This event was created by <a href=\"[https://app.timeflow.ai/landing/about?name=Darya+Mitryashkina&utm_source=calendar&utm_campaign=calendar-referral&utm_medium=habit-event&utm_term=xtUPe\\](https://app.reclaim.ai/landing/about?name=Darya+Mitryashkina&utm_source=calendar&utm_campaign=calendar-referral&utm_medium=habit-event&utm_term=xtUPe%5C%5C)">Timeflow</a>.</i><p>This Habit is now marked as done in Timeflow. You can reschedule it to later in the day if you didn't do the Habit, or delete the event if you want to skip it for the day.</p>",
                 "colorId": "1",
@@ -114,19 +133,8 @@ def create_event(user, credentials, calendar_id, event_details):
                             "timeflow.summaryHash": "675614556",
                             "timeflow.descriptionHash": "-2032938786",
                             "timeflow.touched": "true",
-                    
-                            "reclaim.event.type": "WORK",
-                            "reclaim.event.priority": "P2",
-                            "reclaim.controlHash": "288986878",
-                            "reclaim.event.subType": "FOCUS",
-                            "reclaim.meeting.type": "NULL",
-                            "reclaim.colorHash": "49",
-                            "reclaim.descriptionHash": "-2032938786",
-                            "reclaim.locationHash": "0",
-                            "reclaim.touched": "true",
-                            "reclaim.assist": "true",
                             },
-                            "shared": {
+                        "shared": {
                             "timeflow.busy": "true",
                         }
                     },
@@ -136,31 +144,42 @@ def create_event(user, credentials, calendar_id, event_details):
                     }
             }
     """
-    event = {
+    timezone = pytz.timezone(event_details['timezone'])
+    start_time = event_details['start'].astimezone(timezone).isoformat()
+    end_time = event_details['end'].astimezone(timezone).isoformat()
+
+    # return start_time
+
+    event_dict = {
         "summary": event_details['summary'],
         "description":  event_details['description'],
         "colorId": event_details['color_id'],
         "start": {
-                    "dateTime": event_details['start'],
-                    "timeZone": event_details['time_zone']
+                    "dateTime": start_time,
+                    "timeZone": event_details['timezone']
                 },
         "end": {
-                    "dateTime": event_details['end'],
-                    "timeZone": event_details['time_zone']
+                    "dateTime": end_time,
+                    "timeZone": event_details['timezone']
                 },
         "extendedProperties": {
-                    "private": {}
+            "private": {
+                "timeflow_touched": event_details['timeflow_touched'],
+                "timeflow_event_type": event_details['timeflow_event_type'],
+                "timeflow_event_id":  event_details['timeflow_event_id'],
+                "timeflow_control_id":  event_details['timeflow_control_id'],
+                "timeflow_event_priority":  event_details['timeflow_event_priority']
+            }
         },
-        "visibility": event_details['time_zone'],
+        "visibility": event_details["visibility"],
         "source": {
-                        "url": event_details['source_url'],
-                        "title": event_details['source_title']
+                    "url": event_details['source_url'],
+                    "title": event_details['source_title']
                     }
-
     }
     try:
         calendar_service = build('calendar', 'v3', credentials=credentials)
-        event = calendar_service.events().insert(calendarId=calendar_id, body=event).execute()
+        event = calendar_service.events().insert(calendarId=calendar_id, body=event_dict).execute()
         return event
     except Exception as e:
-        return e
+        raise ValueError(f"{e}")

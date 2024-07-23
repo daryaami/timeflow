@@ -14,6 +14,7 @@ class Task(models.Model):
     priority = models.CharField(
         choices=PRIORITY_CHOICES, default=Priority.HIGH, max_length=20
     )
+    # заменить на DurationField
     duration = models.IntegerField(default=60)
     min_duration = models.IntegerField(default=None, null=True, blank=True)
     max_duration = models.IntegerField(default=None, null=True, blank=True)

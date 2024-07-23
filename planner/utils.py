@@ -67,3 +67,82 @@ def get_all_events_by_weekday(user_calendars, user_credentials, date_param=None)
         events_by_weekday[day_key]["events"].append(event)
     
     return {"days": events_by_weekday}
+
+def create_task(user, credentials, calendar_id, event_details):
+    """Creates new calendar event
+    Args:
+        user_credentials: Credentials
+        calendar_id: str
+        event_detailes: dict   
+            {
+                "summary": "Summary",
+                "description": "<i>This event was created by <a href=\"[https://app.timeflow.ai/landing/about?name=Darya+Mitryashkina&utm_source=calendar&utm_campaign=calendar-referral&utm_medium=habit-event&utm_term=xtUPe\\](https://app.reclaim.ai/landing/about?name=Darya+Mitryashkina&utm_source=calendar&utm_campaign=calendar-referral&utm_medium=habit-event&utm_term=xtUPe%5C%5C)">Timeflow</a>.</i><p>This Habit is now marked as done in Timeflow. You can reschedule it to later in the day if you didn't do the Habit, or delete the event if you want to skip it for the day.</p>",
+                "colorId": "1",
+                "start": {
+                    "dateTime": "2024-06-24T09:00:00+03:00",
+                    "timeZone": "Europe/Moscow"
+                },
+                "end": {
+                    "dateTime": "2024-06-24T10:30:00+03:00",
+                    "timeZone": "Europe/Moscow"
+                },
+                "visibility": "public",
+                "extendedProperties": {
+                    "private": {
+                            "timeflow.event.category": "personal",
+                            "timeflow.priority": "high",
+                            "timeflow.colorHash": "49",
+                            "timeflow.idHash": "67561455",
+                            "timeflow.summaryHash": "675614556",
+                            "timeflow.descriptionHash": "-2032938786",
+                            "timeflow.touched": "true",
+                    
+                            "reclaim.event.type": "WORK",
+                            "reclaim.event.priority": "P2",
+                            "reclaim.controlHash": "288986878",
+                            "reclaim.event.subType": "FOCUS",
+                            "reclaim.meeting.type": "NULL",
+                            "reclaim.colorHash": "49",
+                            "reclaim.descriptionHash": "-2032938786",
+                            "reclaim.locationHash": "0",
+                            "reclaim.touched": "true",
+                            "reclaim.assist": "true",
+                            },
+                            "shared": {
+                            "timeflow.busy": "true",
+                        }
+                    },
+                    "source": {
+                        "url": "https://app.reclaim.ai/habits/2138279",
+                        "title": "Timeflow Habit"
+                    }
+            }
+    """
+    event = {
+        "summary": event_details['summary'],
+        "description":  event_details['description'],
+        "colorId": event_details['color_id'],
+        "start": {
+                    "dateTime": event_details['start'],
+                    "timeZone": event_details['time_zone']
+                },
+        "end": {
+                    "dateTime": event_details['end'],
+                    "timeZone": event_details['time_zone']
+                },
+        "extendedProperties": {
+                    "private": {}
+        },
+        "visibility": event_details['time_zone'],
+        "source": {
+                        "url": event_details['source_url'],
+                        "title": event_details['source_title']
+                    }
+
+    }
+    try:
+        calendar_service = build('calendar', 'v3', credentials=credentials)
+        event = calendar_service.events().insert(calendarId=calendar_id, body=event).execute()
+        return event
+    except Exception as e:
+        return e

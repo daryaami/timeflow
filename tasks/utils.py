@@ -1,3 +1,4 @@
+from utils import LockState
 from .models import Task
 from datetime import datetime
 import uuid
@@ -32,7 +33,7 @@ def create_new_user_task(user, **params):
             hours=params["hours"],
             user=user,
             private=params["private"],
-            color=params["color"],
+            color=params["color"]
         )
         return task
     except Exception as e:
@@ -40,8 +41,15 @@ def create_new_user_task(user, **params):
 
 
 def create_task_event(
-    task_model: Task, start_datetime: datetime, end_datetime: datetime
+    task_model: Task, start_datetime: datetime, end_datetime: datetime, status: LockState
 ):
+    """ 
+    Создает событие задачи в календаре.
+    Args: 
+    task_model: Task, задача
+    start_datetime, end_datetime: datetime tzaware, начало и конец события 
+    status: LockState, указывает на источник события. Если событие запланировано алгоритмом и еще не прошло - FREE, если пользователем - MANUAL, если событие прошло - PAST
+    """
     try:
         user = task_model.user
         credentials = user.get_and_refresh_credentials()
@@ -53,6 +61,7 @@ def create_task_event(
         timeflow_event_id = str(task_model.pk)
         timeflow_control_id = str(uuid.uuid4())
         timeflow_event_priority = task_model.priority
+        timeflow_event_status = status.value
         timezone = user.time_zone
         summary = task_model.name
         description = "<i>This event was created by TimeFlow.</i>"
@@ -76,10 +85,10 @@ def create_task_event(
             timeflow_event_id=timeflow_event_id,
             timeflow_control_id=timeflow_control_id,
             timeflow_event_priority=timeflow_event_priority,
+            timeflow_event_status=timeflow_event_status,
             source_url=source_url,
             source_title=source_title,
         )
-
         if new_event:
             return new_event
 

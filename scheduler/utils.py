@@ -1,10 +1,14 @@
 import datetime
-from datetime import date, time, datetime, timedelta, timezone
+from datetime import date, time, datetime, timedelta
+from tasks.utils import create_task_event, get_user_tasks
+from utils import LockState
 from tasks.models import Task
+from users.models import CustomUser
 import pytz
 from planner.utils import get_all_user_events
+from django.http import JsonResponse
 
-SCHEDULE_INTERVAL_DAYS = 10
+SCHEDULE_INTERVAL_DAYS = 60
 
 priority_order = {None: 0, "low": 1, "medium": 2, "high": 3, "critical": 4}
 
@@ -98,22 +102,18 @@ class TaskScheduler:
         Returns:
             list: Список событий в календаре.
         """
-        try:
-            user_credentials = user.get_and_refresh_credentials()
-            events = get_all_user_events(
-                user=user,
-                credentials=user_credentials,
-                start_date=date.today(),
-                time_interval=timedelta(days=SCHEDULE_INTERVAL_DAYS),
-            )
-            calendar = [
-                TaskEvent(event=event, tz=self.user_timezone) for event in events
-            ]
-            calendar.sort(key=lambda x: x.start)
-            return calendar
-        except Exception as e:
-            print(f"Error loading calendar: {e}")
-            return []
+        user_credentials = user.get_and_refresh_credentials()
+        events = get_all_user_events(
+            user=user,
+            credentials=user_credentials,
+            start_date=date.today() - timedelta(days=SCHEDULE_INTERVAL_DAYS),
+            time_interval=timedelta(days=SCHEDULE_INTERVAL_DAYS*2),
+        )
+        calendar = [
+            TaskEvent(event=event, tz=self.user_timezone) for event in events if "dateTime" in event["start"]
+        ]
+        calendar.sort(key=lambda x: x.start)
+        return calendar
 
     def add_task(self, task: Task):
         task_calendar_events = list(
@@ -123,6 +123,7 @@ class TaskScheduler:
             ((event.end - event.start) for event in task_calendar_events), timedelta()
         )
         task.duration -= total_event_duration
+        print(f"{task.name}: duration left {task.duration}, already planned {total_event_duration}")
         if task.duration > timedelta(0):
             task.min_duration = min(task.min_duration, task.duration)
             self.tasks.append(task)
@@ -253,12 +254,16 @@ def schedule_tasks_for_user(user):
         list: Список задач с обновленными блоками времени.
     """
     scheduler = TaskScheduler(user)
-    tasks = Task.objects.filter(user=user)
+    tasks = get_user_tasks(user=user)
     for task in tasks:
         task.available_hours = task.hours.intervals
         task.blocks = []
         scheduler.add_task(task)
 
     scheduler.schedule_tasks()
+
+    for task in scheduler.tasks:
+        for block in task.blocks:
+            create_task_event(task, block[0], block[1], status=LockState.FREE)
 
     return scheduler.tasks

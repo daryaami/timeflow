@@ -1,15 +1,15 @@
-from django.shortcuts import render
+import pytz
+from datetime import datetime, timedelta
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from datetime import datetime, timedelta
-import pytz
 
-# from django.utils import timezone
-from .models import Task
-from .utils import get_user_tasks, create_new_user_task, create_task_event
+from scheduler.utils import schedule_tasks_for_user
 from users.utils import get_hours_by_id
 from users.models import Hours
 from main.models import Color
+
+from .utils import get_user_tasks, create_new_user_task, create_task_event
+from .models import Task
 
 # Create your views here.
 @login_required
@@ -52,8 +52,8 @@ def create_task(request):
         
         schedule_after = datetime.fromisoformat(params['schedule_after']) if "schedule_after" in params else datetime.now()
         private = params['private'] if "private" in params else True
-        min_duration = int(params['min_duration']) if 'min_duration' in params and params['min_duration'] else None
-        max_duration = int(params['max_duration']) if 'max_duration' in params and params['min_duration'] else None
+        min_duration = timedelta(minutes=int(params['min_duration'])) if 'min_duration' in params and params['min_duration'] else None
+        max_duration = timedelta(minutes=int(params['max_duration'])) if 'max_duration' in params and params['min_duration'] else None
         color = Color.objects.get(id=params['colorId'])if 'color_id' in params and params['color_id'] else None
         notes = params['notes'] if 'notes' in params else ''
 
@@ -62,7 +62,7 @@ def create_task(request):
         task = create_new_user_task(user, 
                 name=params['name'], 
                 priority=params['priority'], 
-                duration=int(params["duration"]), 
+                duration=timedelta(minutes=int(params["duration"])), 
                 min_duration=min_duration, 
                 max_duration=max_duration,
                 schedule_after=schedule_after,
@@ -72,6 +72,8 @@ def create_task(request):
                 color=color,
                 notes=notes,
                 )
+        
+        scheduled_tasks = schedule_tasks_for_user(user)
             
         return JsonResponse({"created": True, "task": task.to_json()})
         

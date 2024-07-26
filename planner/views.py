@@ -1,15 +1,9 @@
-from django.http import JsonResponse, HttpResponseRedirect
-from users.models import GoogleCredentials
-from django.shortcuts import redirect, render
+from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from googleapiclient.discovery import build
 
 from planner.utils import get_all_events_by_weekday
 from app import settings
-
-from datetime import datetime, timedelta, time
-import json
-from datetime import datetime, timedelta
 
 scopes = settings.SCOPES
 

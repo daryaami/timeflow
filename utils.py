@@ -28,3 +28,10 @@ PERIOD_CHOICES = [
         ('weekly', 'Weekly'), 
         ('monthly', 'Monthly')
     ]
+
+class LockState(Enum):
+    PAST = "PAST"
+    FREE = "FREE"
+    MANUAL = "MANUAL"
+    LOCKED = 'LOCKED'
+

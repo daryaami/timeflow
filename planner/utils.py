@@ -35,6 +35,7 @@ def get_event_dict(calendar_id, google_event):
                 event_dict["timeflow_event_type"] =  ext_properties_private.get("timeflow_event_type")
                 event_dict["timeflow_event_id"] =  ext_properties_private.get("timeflow_event_id")
                 event_dict["timeflow_event_priority"] =  ext_properties_private.get("timeflow_event_priority")
+                event_dict["timeflow_event_status"] =  ext_properties_private.get("timeflow_event_status")
 
     return event_dict
 
@@ -132,6 +133,7 @@ def create_event(user, credentials, calendar_id, **event_details):
                 timeflow_event_priority=timeflow_event_priority,
                 source_url=source_url,
                 source_title=source_title
+                status=LockState
 
                 "summary": "Summary",
                 "description": "<i>This event was created by <a href=\"[https://app.timeflow.ai/landing/about?name=Darya+Mitryashkina&utm_source=calendar&utm_campaign=calendar-referral&utm_medium=habit-event&utm_term=xtUPe\\](https://app.reclaim.ai/landing/about?name=Darya+Mitryashkina&utm_source=calendar&utm_campaign=calendar-referral&utm_medium=habit-event&utm_term=xtUPe%5C%5C)">Timeflow</a>.</i><p>This Habit is now marked as done in Timeflow. You can reschedule it to later in the day if you didn't do the Habit, or delete the event if you want to skip it for the day.</p>",
@@ -169,8 +171,6 @@ def create_event(user, credentials, calendar_id, **event_details):
     start_time = event_details['start'].astimezone(timezone).isoformat()
     end_time = event_details['end'].astimezone(timezone).isoformat()
 
-    # return start_time
-
     event_dict = {
         "summary": event_details['summary'],
         "description":  event_details['description'],
@@ -189,7 +189,8 @@ def create_event(user, credentials, calendar_id, **event_details):
                 "timeflow_event_type": event_details['timeflow_event_type'],
                 "timeflow_event_id":  event_details['timeflow_event_id'],
                 "timeflow_control_id":  event_details['timeflow_control_id'],
-                "timeflow_event_priority":  event_details['timeflow_event_priority']
+                "timeflow_event_priority":  event_details['timeflow_event_priority'],
+                "timeflow_event_status": event_details["timeflow_event_status"]
             }
         },
         "visibility": event_details["visibility"],

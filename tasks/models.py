@@ -15,9 +15,9 @@ class Task(models.Model):
         choices=PRIORITY_CHOICES, default=Priority.HIGH, max_length=20
     )
     # заменить на DurationField
-    duration = models.IntegerField(default=60)
-    min_duration = models.IntegerField(default=None, null=True, blank=True)
-    max_duration = models.IntegerField(default=None, null=True, blank=True)
+    duration = models.DurationField(default=timedelta(minutes=60))
+    min_duration = models.DurationField(default=None, null=True, blank=True)
+    max_duration = models.DurationField(default=None, null=True, blank=True)
     schedule_after = models.DateTimeField(null=True, default=None)
     due_date = models.DateTimeField()
     time_spent = models.DurationField(null=True, default=timedelta(minutes=0))
@@ -64,6 +64,10 @@ class Task(models.Model):
 
     def save(self, *args, **kwargs):
         user_timezone = pytz.timezone(self.user.time_zone)
+        if not self.min_duration:
+            self.min_duration = self.duration
+        if not self.max_duration:
+            self.max_duration = self.duration
         timezone.activate(user_timezone)
         if not self.schedule_after:
             self.schedule_after = timezone.now()

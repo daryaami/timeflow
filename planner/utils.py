@@ -10,9 +10,12 @@ from users.utils import get_calendar_by_id
 from utils import Priority
 
 
+# def transform_event_timezone(event):
+
 def get_event_dict(calendar_id, google_event):
     calendar = get_calendar_by_id(calendar_id=calendar_id)
     (bc_hex, fc_hex) = get_event_colors_hex(google_event['colorId']) if 'colorId' in google_event else (calendar.background_color, calendar.foreground_color)
+
     event_dict = {
         "id": google_event['id'],
         "summary": google_event['summary'],
@@ -24,18 +27,27 @@ def get_event_dict(calendar_id, google_event):
         "calendar": calendar.summary,
         "visibility": google_event["visibility"] if 'visibility' in google_event else None,
     }
+    if "extendedProperties" in google_event:
+        ext_properties_private = google_event["extendedProperties"]["private"]
+        if "timeflow_touched" in ext_properties_private:
+            event_dict["timeflow_touched"] = ext_properties_private["timeflow_touched"],
+            if ext_properties_private['timeflow_touched'] == 'true':
+                event_dict["timeflow_event_type"] =  ext_properties_private.get("timeflow_event_type")
+                event_dict["timeflow_event_id"] =  ext_properties_private.get("timeflow_event_id")
+                event_dict["timeflow_event_priority"] =  ext_properties_private.get("timeflow_event_priority")
+
     return event_dict
 
 
-def get_calendar_events(user_credentials, calendar_id, start_time, end_time):
+def get_calendar_events(credentials, calendar_id, start_time, end_time):
     try:
-        calendar_service = build('calendar', 'v3', credentials=user_credentials)
+        calendar_service = build('calendar', 'v3', credentials=credentials)
         events_result = (
             calendar_service.events()
             .list(
                 calendarId=calendar_id,
-                timeMin=start_time.isoformat() + 'T00:00:00Z',
-                timeMax=end_time.isoformat() + 'T00:00:00Z',
+                timeMin=start_time.isoformat(),
+                timeMax=end_time.isoformat(),
                 singleEvents=True,
                 orderBy='startTime')
             .execute())
@@ -44,19 +56,22 @@ def get_calendar_events(user_credentials, calendar_id, start_time, end_time):
     
     except Exception as e:
         print(f"Error fetching events: {e}")
-        print(f"calendar_id: {calendar_id}, timeMin: {start_time.isoformat() + 'T00:00:00Z'}, timeMax: {end_time.isoformat() + 'T00:00:00Z'}")
+        print(f"calendar_id: {calendar_id}, timeMin: {start_time.isoformat()}, timeMax: {end_time.isoformat()}")
         return []
 
 
-def fetch_calendar_events(user_credentials, calendar_id, start_time, end_time):
-    return get_calendar_events(user_credentials, calendar_id, start_time, end_time)
+def get_all_user_events(user, credentials, start_date=None, time_interval=timedelta(days=90)):
+    tz = pytz.timezone(user.time_zone)
+    user_calendars = user.get_calendars()
 
+    if start_date is None:
+        start_date = datetime.combine(date.today(), datetime.min.time())
+    start_of_week_datetime = tz.localize(datetime.combine(start_date, datetime.min.time()))
 
-def get_all_user_events(user_calendars, user_credentials, start_date=date.today(), time_interval=timedelta(days=90)):
     all_events = []
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = [
-            executor.submit(fetch_calendar_events, user_credentials, calendar.calendar_id, start_date, start_date + time_interval)
+            executor.submit(get_calendar_events, credentials, calendar.calendar_id, start_of_week_datetime, start_of_week_datetime + time_interval)
             for calendar in user_calendars
         ]
         for future in concurrent.futures.as_completed(futures):
@@ -65,27 +80,33 @@ def get_all_user_events(user_calendars, user_credentials, start_date=date.today(
     return all_events
 
 
-def get_all_events_by_weekday(user_calendars, user_credentials, date_param=None):
+def get_all_events_by_weekday(user, credentials, date_param=None):
+    tz = pytz.timezone(user.time_zone)
     if date_param:
         calendar_date = datetime.strptime(date_param, "%Y-%m-%d").date()
     else:
         calendar_date = date.today()
 
     start_of_week = calendar_date - timedelta(days=calendar_date.weekday())
-    
+
     days_of_week = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
     events_by_weekday = {day: {"date": (start_of_week + timedelta(days=i)).strftime("%d.%m.%Y"), "events": []} for i, day in enumerate(days_of_week)}
 
-    all_events = get_all_user_events(user_credentials=user_credentials, user_calendars=user_calendars, start_date=start_of_week, time_interval=timedelta(days=7))
+    all_events = get_all_user_events(user=user, credentials=credentials, start_date=start_of_week, time_interval=timedelta(days=7))
 
     for event in all_events:
         event_start = event['start'].get('dateTime', event['start'].get('date'))
-        event_date = datetime.strptime(event_start[:10], '%Y-%m-%d').date()
+        if 'dateTime' in event['start']:
+            event_date = datetime.fromisoformat(event_start).astimezone(tz).date()
+        else:
+            event_date = datetime.strptime(event_start, '%Y-%m-%d').date()
+        
         weekday = event_date.weekday()
         day_key = days_of_week[weekday]
         events_by_weekday[day_key]["events"].append(event)
     
     return {"days": events_by_weekday}
+
 
 def create_event(user, credentials, calendar_id, **event_details):
     """Creates new calendar event

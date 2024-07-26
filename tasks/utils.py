@@ -4,9 +4,19 @@ import uuid
 from planner.utils import create_event
 
 
+def get_user_tasks_json(user):
+    try:
+        user_tasks = Task.objects.filter(user=user)
+        return [task.to_json() for task in user_tasks]
+    except Exception as e:
+        raise ValueError(f"Error getting user tasks json: {e}")
+
+
 def get_user_tasks(user):
-    user_tasks = Task.objects.filter(user=user)
-    return [task.to_json() for task in user_tasks]
+    try:
+        return Task.objects.filter(user=user)
+    except Exception as e:
+        raise ValueError(f"Error getting user tasks: {e}")
 
 
 def create_new_user_task(user, **params):

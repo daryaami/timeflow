@@ -15,6 +15,7 @@ PRIORITY_CHOICES = [
         (Priority.LOW.value, 'Low'),
         (Priority.MEDIUM.value, 'Medium'),
         (Priority.HIGH.value, 'High'),
+        (Priority.CRITICAL.value, 'Critical'),
     ]
 
 CATEGORY_CHOICES = [

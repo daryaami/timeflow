@@ -21,3 +21,12 @@ def get_user_info(request):
         "tasks": get_user_tasks_json(user=user)
     }
     return JsonResponse(user_info)
+
+
+def get_user_hours(request):
+    user = request.user
+    hours_json = {
+        "user": user.email,
+        "hours": [hours.to_json() for hours in user.get_user_hours_list()]
+    }
+    return hours_json

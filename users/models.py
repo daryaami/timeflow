@@ -112,7 +112,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def get_calendars(self):
         return UserCalendar.objects.filter(user=self)
-    
+
     def get_primary_calendar(self):
         return UserCalendar.objects.get(user=self, primary=True)
 
@@ -168,10 +168,7 @@ class UserCalendar(models.Model):
     foreground_color = models.CharField(max_length=8, null=True)
 
     def get_info_json(self):
-        info = {
-            'calendar_id': self.calendar_id,
-            'summary': self.summary
-        }
+        info = {"calendar_id": self.calendar_id, "summary": self.summary}
         return info
 
     class Meta:
@@ -205,6 +202,12 @@ class Hours(models.Model):
     def to_json(self):
         return {"id": self.pk, "name": self.name, "intervals": self.intervals}
 
+    # def to_json(self):
+    #     return {"id": self.pk, 
+    #             "name": self.name, 
+    #             "intervals": self.intervals,
+    #             "calendar": {""self.calendar}}
+
     def __str__(self):
         return "%s (id %s)" % (self.name, self.pk)
 
@@ -213,13 +216,19 @@ class Hours(models.Model):
 
 
 class ProfileInfo(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="profileinfo")
-    task_calendar = models.ForeignKey(UserCalendar, on_delete=models.SET_DEFAULT, default=None, null=True)
-    custom_visibility = models.CharField(null=True, blank=True, default='Busy', max_length=255)
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="profileinfo"
+    )
+    task_calendar = models.ForeignKey(
+        UserCalendar, on_delete=models.SET_DEFAULT, default=None, null=True
+    )
+    custom_visibility = models.CharField(
+        null=True, blank=True, default="Busy", max_length=255
+    )
 
     def __str__(self):
         return "User %s profile info" % (self.user.email)
-    
+
     class Meta:
         db_table = "profileinfo"
         constraints = [

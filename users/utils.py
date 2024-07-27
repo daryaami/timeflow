@@ -36,7 +36,7 @@ def create_user_custom_hours(user):
     
 
 def get_user_hours_json(user):
-    return [hours.to_json() for hours in user.get_user_hours_list()],
+    return [hours.to_json() for hours in user.get_user_hours_list()]
 
 
 def get_calendar_by_id(calendar_id):

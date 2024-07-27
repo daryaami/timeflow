@@ -19,6 +19,8 @@ const time = computed(() => `${getStringTime(props.event.start.dateTime)} - ${ge
     :style='{
       top: `${position}%`,
       height: `${height}%`,
+      backgroundColor: `${event.background_color}`,
+      color: `${event.foreground_color}`,
     }'
   >
     <span class="event-card__name">{{ event.summary }}</span>
@@ -42,11 +44,12 @@ const time = computed(() => `${getStringTime(props.event.start.dateTime)} - ${ge
     @include small-bold;
     margin-bottom: size(4px);
     display: block;
+    color: inherit;
   }
 
   &__time {
     @include small-light;
-    color: $white;
+    color: inherit;
   }
 }
 </style>

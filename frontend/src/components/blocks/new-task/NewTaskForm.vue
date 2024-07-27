@@ -6,6 +6,7 @@ import HoursSelectVue from "./HoursSelect.vue";
 import DateInputVue from "./DateInput.vue";
 import { ref } from "vue";
 import { getTomorrow } from "@/components/js/time-utils";
+import { getCookie } from "@/components/js/getCookie";
 
 const name = ref();
 const priority = ref();
@@ -40,26 +41,11 @@ const getFormData = () => {
   }
 }
 
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      // Does this cookie string begin with the name we want?
-      if (cookie.substring(0, name.length + 1) === (name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  return cookieValue;
-}
-
-const csrftoken = getCookie('csrftoken');
 
 const submitHandler = async (e) => {
   e.preventDefault();
+
+  const csrftoken = getCookie('csrftoken');
 
   const formData = getFormData();
   let response = await fetch(`${window.location.origin}/task_api/create_task/`, {

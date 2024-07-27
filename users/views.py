@@ -18,6 +18,6 @@ def get_user_info(request):
     user_info = {
         "profile": user.get_profile_json(),
         "hours": get_user_hours_json(user=user),
-        "tasks": get_user_tasks(user=user),
+        "tasks": get_user_tasks(user=user)
     }
-    return JsonResponse(user_info)
+    return JsonResponse({"user_data": user_info})

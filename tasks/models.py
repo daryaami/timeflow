@@ -43,7 +43,7 @@ class Task(models.Model):
             "schedule_after": self.schedule_after,
             "due_date": self.due_date,
             "private": self.private,
-            "color_hex": self.color.hex if self.color else None,
+            # "color_hex": self.color.hex if self.color else None,
             "hours": (
                 {
                     "id": self.hours.pk,

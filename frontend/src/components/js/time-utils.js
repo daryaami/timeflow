@@ -36,5 +36,12 @@ const getStringTime = (time) => {
   return `${hours}:${minutes}`;
 };
 
+const getTomorrow = () => {
+  const date = new Date();
+  date.setDate(date.getDate() + 1);
+  console.log(date)
+  return date
+}
 
-export { getDecimalHours, getHours, getMinutes, getStringTime }
+
+export { getDecimalHours, getHours, getMinutes, getStringTime, getTomorrow }

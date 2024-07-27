@@ -1,9 +1,18 @@
 <script setup>
-import { ref } from 'vue';
 import VueDatePicker from '@vuepic/vue-datepicker';
 const props = defineProps(['label'])
 
-const date = ref();
+const date = defineModel();
+
+const format = (date) => {
+  const day = date.getDate();
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
+}
 </script>
 
 <template>
@@ -19,8 +28,11 @@ const date = ref();
         disable-year-select
         month-name-format="long"
         hide-offset-dates
+        hide-input-icon
+        model-type="iso"
+        placeholder="Now"
+        :format="format"
       >
-        <template #input-icon></template>
         <template #arrow-left>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M10.8096 2.17852C10.5557 1.94049 10.1442 1.94049 9.89028 2.17852L5.57117 6.22834C4.80981 6.94224 4.80958 8.09957 5.57064 8.81372L9.84159 12.8214C10.0954 13.0595 10.507 13.0595 10.7609 12.8214C11.0147 12.5834 11.0147 12.1975 10.7609 11.9595L6.48882 7.95383C6.23496 7.71576 6.23496 7.32988 6.48882 7.09187L10.8096 3.04049C11.0635 2.80246 11.0635 2.41655 10.8096 2.17852Z" fill="currentColor"/>

@@ -5,18 +5,71 @@ import CheckboxVue from "../form/Checkbox.vue";
 import HoursSelectVue from "./HoursSelect.vue";
 import DateInputVue from "./DateInput.vue";
 import { ref } from "vue";
+import { getTomorrow } from "@/components/js/time-utils";
 
-
-let name;
-
+const name = ref();
+const priority = ref();
 const isSplited = ref(false);
 const duration = ref(90);
 const minDuration = ref(30);
 const maxDuration = ref(90);
+const dueDate = ref(getTomorrow().toISOString());
+const hours = ref();
 
-const submitHandler = (e) => {
+const getFormData = () => {
+  const data = {
+    name: name.value,
+    priority: priority.value,
+    duration: duration.value,
+    hours_id: String(hours.value),
+    due_date: dueDate.value
+  }
+  
+  const durations = {
+    min_duration: minDuration.value,
+    max_duration: maxDuration.value,
+  }
+
+  if (isSplited.value) {
+    return {
+      ...data,
+      ...durations,
+    }
+  } else {
+    return data
+  }
+}
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      // Does this cookie string begin with the name we want?
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+const submitHandler = async (e) => {
   e.preventDefault();
-  console.log(name)
+
+  const formData = getFormData();
+  let response = await fetch(`${window.location.origin}/task_api/create_task/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+      'X-CSRFToken': csrftoken
+    },
+    body: JSON.stringify(formData)
+  });
 }
 </script>
 
@@ -31,7 +84,9 @@ const submitHandler = (e) => {
         >
       </div>
 
-      <PrioritySelectVue/>
+      <PrioritySelectVue
+        v-model="priority"
+      />
     </div>
 
     <div class="new-task-form__row">
@@ -59,7 +114,9 @@ const submitHandler = (e) => {
       />
     </div>
 
-    <HoursSelectVue/>
+    <HoursSelectVue
+      v-model="hours"
+    />
 
     <div class="new-task-form__row new-task-form__dates">
       <DateInputVue
@@ -67,6 +124,7 @@ const submitHandler = (e) => {
       />
       <DateInputVue
         label="Due date"
+        v-model="dueDate"
       />
     </div>
     <button class="new-task-form__button">Create</button>

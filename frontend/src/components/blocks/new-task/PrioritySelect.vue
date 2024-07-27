@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useDropdown } from "@/components/composables/dropdown";
 import criticalPriorityIconVue from "../../icons/priorities/critical-priority-icon.vue";
 import highPriorityIconVue from "../../icons/priorities/high-priority-icon.vue";
@@ -9,32 +9,43 @@ import lowPriorityIconVue from "../../icons/priorities/low-priority-icon.vue";
 const { isDropdownOpen, dropdownClickHandler, closeDropdown } = useDropdown();
 
 const currentOption = ref(null);
+const currentValue = defineModel();
 
 const priorities = [
   {
     icon: criticalPriorityIconVue,
     name: 'Critical',
+    value: 'critical',
   },
   {
     icon: highPriorityIconVue,
     name: 'High priority',
+    value: 'high',
   },
   {
     icon: mediumPriorityIconVue,
     name: 'Medium priority',
+    value: 'medium',
   },
   {
     icon: lowPriorityIconVue,
     name: 'Low priority',
+    value: 'low',
   },
 ]
 
+
 currentOption.value = priorities[1];
+currentValue.value = currentOption.value.value
 
 const optionClickHandler = (option) => {
   currentOption.value = option;
   closeDropdown();
 }
+
+watch(currentOption, (newValue) => {
+  currentValue.value = newValue.value;
+})
 </script>
 
 <template>

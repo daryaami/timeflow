@@ -1,39 +1,49 @@
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useDropdown } from "@/components/composables/dropdown";
+import { getUserData } from "@/components/js/getUserData";
 
 const { isDropdownOpen, dropdownClickHandler, closeDropdown } = useDropdown();
 
 const currentOption = ref();
+const hours = ref(null);
+const currentValue = defineModel();
 
-const hours = [
-  {
-    name: 'Personal Hours',
-  },
-  {
-    name: 'Working Hours',
+const getHours = async () => {
+  try {
+    const response = await getUserData();
+    hours.value = response.hours;
+  } catch (error) {
+    console.error('ошибка', error);
   }
-]
-
-currentOption.value = hours[0];
+} 
 
 const optionClickHandler = (option) => {
   currentOption.value = option;
   closeDropdown();
 }
+
+watch(currentOption, (newValue) => {
+  currentValue.value = newValue.id;
+})
+
+onMounted(async () => {
+  await getHours();
+  currentOption.value = hours.value[0];
+})
 </script>
 
 <template>
   <div class="hours-select input dropdown-wrapper">
     <div @click="dropdownClickHandler" class="input__input">
-      <span>{{ currentOption.name }}</span>
+      <span v-if="currentOption">{{ currentOption.name }}</span>
       <div class="hours-select__arrow"
         :class="{'rotated': isDropdownOpen}"
       ></div>
     </div>
     <span class="input__label">Hours</span>
     <Transition name="dropdown">
-      <ul v-if="isDropdownOpen"  class="hours-select__dropdown">
+      <ul v-if="isDropdownOpen && hours"  class="hours-select__dropdown">
         <li class="hours-select__dropdown-item"
           v-for="(option, i) in hours"
           :key="i"

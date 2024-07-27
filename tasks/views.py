@@ -1,3 +1,4 @@
+import json
 import pytz
 from datetime import datetime, timedelta
 from django.http import JsonResponse
@@ -45,8 +46,11 @@ def create_task(request):
                                 "private": task.private,
                                 "notes": task.notes,
                                 }"""
+    if request.method != 'POST':
+            return JsonResponse({"error": "Only POST requests are allowed."}, status=405)
+    
     try:
-        params = request.POST
+        params = json.loads(request.body.decode('utf-8'))
         user = request.user
         task_hours = get_hours_by_id(params['hours_id'])
         user_timezone = pytz.timezone(user.time_zone)
@@ -58,7 +62,8 @@ def create_task(request):
         color = Color.objects.get(id=params['color_id']) if 'color_id' in params and params['color_id'] else None
         notes = params.get('notes', '')
 
-        due_date_aware = user_timezone.localize(datetime.fromisoformat(params['due_date']))
+        # due_date_aware = user_timezone.localize(datetime.fromisoformat(params['due_date']))
+        due_date_aware = datetime.fromisoformat(params['due_date']).astimezone(user_timezone)
         print(f"Due date: {params['due_date']}, Due date aware: {due_date_aware}")
 
         task = create_new_user_task(user, 
@@ -83,12 +88,12 @@ def create_task(request):
         return JsonResponse({"error": "Hours id does not match any existing objects."}, status=400)
     except Color.DoesNotExist:
         return JsonResponse({"error": "Color id does not match any existing objects."}, status=400)
-    except KeyError as e:
-        return JsonResponse({"error": f"Missing parameter: {e.args[0]}"}, status=400)
+    # except KeyError as e:
+    #     return JsonResponse({"error": f"Missing parameter: {e.args[0]}"}, status=400)
     except ValueError as e:
         return JsonResponse({"error": str(e)}, status=400)
-    except Exception as e:
-        return JsonResponse({"error": "An unexpected error occurred."}, status=500)
+    # except Exception as e:
+    #     return JsonResponse({"error": "An unexpected error occurred."}, status=500)
     
 
 def test_task(request):

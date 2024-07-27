@@ -77,9 +77,10 @@ const optionClickHandler = (option) => {
     left: 0;
     padding-top: size(17px);
     padding-bottom: size(16px);
-    background: $dark-white;
     border-radius: size(15px);
     width: 100%;
+    background: #ebf6ff;
+    z-index: 100;
   }
 
   &__dropdown-item {
@@ -105,7 +106,7 @@ const optionClickHandler = (option) => {
     }
 
     @include hover {
-      background: $dark-lines;
+      background: #dee8f0;
     }
   }
 }

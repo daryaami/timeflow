@@ -3,6 +3,7 @@ import DurationInputVue from "./DurationInput.vue";
 import PrioritySelectVue from "./PrioritySelect.vue";
 import CheckboxVue from "../form/Checkbox.vue";
 import HoursSelectVue from "./HoursSelect.vue";
+import DateInputVue from "./DateInput.vue";
 import { ref } from "vue";
 
 
@@ -59,6 +60,15 @@ const submitHandler = (e) => {
     </div>
 
     <HoursSelectVue/>
+
+    <div class="new-task-form__row new-task-form__dates">
+      <DateInputVue
+        label="Schedule after"
+      />
+      <DateInputVue
+        label="Due date"
+      />
+    </div>
     <button class="new-task-form__button">Create</button>
   </form>
 </template>
@@ -127,6 +137,10 @@ const submitHandler = (e) => {
   &__durations {
     display: flex;
     gap: size(10px)
+  }
+
+  &__dates {
+    gap: size(10px);
   }
 }
 </style>

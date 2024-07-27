@@ -12,7 +12,7 @@
   navigation: auto;
 }
 
-$baseWidth: 1920px;
+$baseWidth: 1600px;
 
 @function size($size) {
   @return math.div($size, $baseWidth) * 100vw;

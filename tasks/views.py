@@ -59,6 +59,7 @@ def create_task(request):
         notes = params.get('notes', '')
 
         due_date_aware = user_timezone.localize(datetime.fromisoformat(params['due_date']))
+        print(f"Due date: {params['due_date']}, Due date aware: {due_date_aware}")
 
         task = create_new_user_task(user, 
                 name=params['name'], 

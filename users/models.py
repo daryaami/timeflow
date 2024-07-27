@@ -200,13 +200,7 @@ class Hours(models.Model):
     # Пример: {"Monday": [{"start": "12:00", "end": "14:00"}, {"start": "16:00", "end": "18:00"}], "Wednesday": [{"start": "13:00", "end": "19:00"}]}
 
     def to_json(self):
-        return {"id": self.pk, "name": self.name, "intervals": self.intervals}
-
-    # def to_json(self):
-    #     return {"id": self.pk, 
-    #             "name": self.name, 
-    #             "intervals": self.intervals,
-    #             "calendar": {""self.calendar}}
+        return {"id": self.pk, "name": self.name, "intervals": self.intervals, "calendar":{"id": self.calendar.calendar_id, "name": self.calendar.summary}}
 
     def __str__(self):
         return "%s (id %s)" % (self.name, self.pk)

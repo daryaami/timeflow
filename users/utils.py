@@ -17,7 +17,7 @@ CUSTOM_PERSONAL_INTERVALS = {"Monday": [{"start": "18:00", "end": "22:00"}],
 
 def get_hours_by_id(id):
     '''Returns Hours object by primary key (id)'''
-    return Hours.objects.get(id=id)
+    return Hours.objects.get(id=int(id))
 
 
 def create_user_custom_hours(user):

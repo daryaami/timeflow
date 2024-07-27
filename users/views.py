@@ -20,4 +20,4 @@ def get_user_info(request):
         "hours": get_user_hours_json(user=user),
         "tasks": get_user_tasks_json(user=user)
     }
-    return JsonResponse({"user_data": user_info})
+    return JsonResponse(user_info)

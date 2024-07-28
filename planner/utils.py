@@ -202,6 +202,6 @@ def create_event(user, credentials, calendar_id, **event_details):
     try:
         calendar_service = build('calendar', 'v3', credentials=credentials)
         event = calendar_service.events().insert(calendarId=calendar_id, body=event_dict).execute()
-        return get_event_dict(event)
+        return get_event_dict(calendar_id=calendar_id, google_event=event)
     except Exception as e:
         raise ValueError(f"{e}")

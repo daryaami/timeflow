@@ -62,7 +62,6 @@ def create_task(request):
         color = Color.objects.get(id=params['color_id']) if 'color_id' in params and params['color_id'] else None
         notes = params.get('notes', '')
 
-        # due_date_aware = user_timezone.localize(datetime.fromisoformat(params['due_date']))
         due_date_aware = datetime.fromisoformat(params['due_date']).astimezone(user_timezone)
         print(f"Due date: {params['due_date']}, Due date aware: {due_date_aware}")
 
@@ -80,9 +79,9 @@ def create_task(request):
                 notes=notes,
                 )
         
-        scheduled_tasks = schedule_tasks_for_user(user)
+        scheduled_events = schedule_tasks_for_user(user)
             
-        return JsonResponse({"created": True, "task": task.to_json()})
+        return JsonResponse({"created": True, "events": scheduled_events})
         
     except Hours.DoesNotExist:
         return JsonResponse({"error": "Hours id does not match any existing objects."}, status=400)

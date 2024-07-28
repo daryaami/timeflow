@@ -261,9 +261,11 @@ def schedule_tasks_for_user(user):
         scheduler.add_task(task)
 
     scheduler.schedule_tasks()
+    events = []
 
     for task in scheduler.tasks:
         for block in task.blocks:
-            create_task_event(task, block[0], block[1], status=LockState.FREE)
+            new_event = create_task_event(task, block[0], block[1], status=LockState.FREE)
+            events.append(new_event)
 
-    return scheduler.tasks
+    return events

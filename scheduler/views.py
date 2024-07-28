@@ -6,5 +6,5 @@ from utils import LockState
 # Create your views here.
 def schedule_tasks(request):
     user = request.user
-    tasks = schedule_tasks_for_user(user)
-    return JsonResponse({"tasks": [task.blocks for task in tasks]})
+    new_events = schedule_tasks_for_user(user)
+    return JsonResponse({"events": new_events})

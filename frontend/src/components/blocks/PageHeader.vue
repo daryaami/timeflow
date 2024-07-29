@@ -1,6 +1,7 @@
 <script setup>
 import NewTaskBlockVue from './new-task/NewTaskBlock.vue';
 import SearchBlock from './SearchBlock.vue'
+import { userData } from '../js/data/userData';
 
 const props = defineProps({
   title: String,
@@ -12,7 +13,7 @@ const props = defineProps({
 <template>
   <div class="page-header">
     <!-- <h1>{{ title }}</h1> -->
-    <new-task-block-vue />
+    <new-task-block-vue v-if="userData" />
     <search-block />
   </div>
 </template>

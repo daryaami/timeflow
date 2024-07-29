@@ -1,22 +1,13 @@
 <script setup>
 import { onMounted, ref, watch } from "vue";
 import { useDropdown } from "@/components/composables/dropdown";
-import { getUserData } from "@/components/js/getUserData";
+import { userData } from "@/components/js/data/userData";
 
 const { isDropdownOpen, dropdownClickHandler, closeDropdown } = useDropdown();
 
 const currentOption = ref();
-const hours = ref(null);
 const currentValue = defineModel();
-
-const getHours = async () => {
-  try {
-    const response = await getUserData();
-    hours.value = response.hours;
-  } catch (error) {
-    console.error('ошибка', error);
-  }
-} 
+const hours = ref(false);
 
 const optionClickHandler = (option) => {
   currentOption.value = option;
@@ -28,7 +19,7 @@ watch(currentOption, (newValue) => {
 })
 
 onMounted(async () => {
-  await getHours();
+  hours.value = userData.value.hours;
   currentOption.value = hours.value[0];
 })
 </script>

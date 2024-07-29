@@ -9,7 +9,6 @@ from planner.utils import get_all_user_events
 from django.http import JsonResponse
 
 SCHEDULE_INTERVAL_DAYS = 60
-
 priority_order = {None: 0, "low": 1, "medium": 2, "high": 3, "critical": 4}
 
 
@@ -20,11 +19,6 @@ def get_sort_key(task):
 def timefromstring(time_str):
     """
     Преобразует строку времени в объект datetime.time.
-
-    Args:
-        time_str (str): Время в формате "HH:MM".
-    Returns:
-        datetime.time: Объект времени.
     """
     try:
         return datetime.strptime(time_str, "%H:%M").time()
@@ -70,6 +64,14 @@ class TaskEvent:
             self.event_priority = task.priority
         self.timespent = 0
 
+    def to_json(self):
+        return {
+            "start": self.start,
+            "end": self.end,
+            "task_id": self.event_id,
+            "timeflow_touched": self.timeflow_touched,
+        }
+
 
 class TaskScheduler:
     """
@@ -107,13 +109,19 @@ class TaskScheduler:
             user=user,
             credentials=user_credentials,
             start_date=date.today() - timedelta(days=SCHEDULE_INTERVAL_DAYS),
-            time_interval=timedelta(days=SCHEDULE_INTERVAL_DAYS*2),
+            time_interval=timedelta(days=SCHEDULE_INTERVAL_DAYS * 2),
         )
         calendar = [
-            TaskEvent(event=event, tz=self.user_timezone) for event in events if "dateTime" in event["start"]
+            TaskEvent(event=event, tz=self.user_timezone)
+            for event in events
+            if "dateTime" in event["start"]
         ]
         calendar.sort(key=lambda x: x.start)
         return calendar
+
+    def add_event(self, event):
+        self.calendar.append(event)
+        self.calendar.sort(key=lambda x: x.start)
 
     def add_task(self, task: Task):
         task_calendar_events = list(
@@ -123,72 +131,51 @@ class TaskScheduler:
             ((event.end - event.start) for event in task_calendar_events), timedelta()
         )
         task.duration -= total_event_duration
-        print(f"{task.name}: duration left {task.duration}, already planned {total_event_duration}")
+        print(
+            f"{task.name}: duration left {task.duration}, already planned {total_event_duration}"
+        )
         if task.duration > timedelta(0):
             task.min_duration = min(task.min_duration, task.duration)
             self.tasks.append(task)
 
     def find_free_slots(self, available_hours, start_datetime, end_datetime, task):
-        """
-        Ищет свободные временные слоты в расписании.
-
-        Args:
-            available_hours (dict): Рабочие часы для каждого дня недели.
-            start_datetime (datetime): Дата и время начала поиска.
-            end_datetime (datetime): Дата и время окончания поиска.
-
-        Returns:
-            list: Список свободных временных слотов.
-        """
         free_slots = []
         current_datetime = start_datetime + timedelta(minutes=5)
 
-        try:
-            while current_datetime <= end_datetime:  # Начинаем с первого дня
-                day_of_week = current_datetime.strftime("%A")
-                if day_of_week in available_hours:
-                    for interval in available_hours[
-                        day_of_week
-                    ]:  # Идем по каждому интервалу из доступных часов
-                        interval_start = timefromstring(interval["start"])
-                        interval_end = timefromstring(interval["end"])
-                        if interval_start is None or interval_end is None:
-                            continue  # Пропускаем некорректные интервалы
+        day_to_intervals = {}
+        for day, intervals in available_hours.items():
+            day_to_intervals[day] = [(timefromstring(i['start']), timefromstring(i['end'])) for i in intervals]
 
-                        # Временные точки начала и конца рабочего интервала
-                        work_start = self.user_timezone.localize(
-                            datetime.combine(current_datetime.date(), interval_start)
-                        )
-                        work_end = self.user_timezone.localize(
-                            datetime.combine(current_datetime.date(), interval_end)
-                        )
+        while current_datetime <= end_datetime:
+            day_of_week = current_datetime.strftime("%A")
+            if day_of_week in day_to_intervals:
+                intervals = day_to_intervals[day_of_week]
+                for interval_start, interval_end in intervals:
+                    if interval_start is None or interval_end is None:
+                        continue
 
-                        # Начало слота
-                        slot_start = max(work_start, round_up(current_datetime))
-                        for event in self.calendar:
-                            if event.start >= work_end:
-                                break
-                            if event.start < slot_start:
-                                if event.end > current_datetime:
-                                    slot_start = event.end
-                                continue
-                            else:
-                                if event.start > slot_start:
-                                    free_slots.append((slot_start, event.start))
-                                slot_start = min(event.end, work_end)
+                    work_start = self.user_timezone.localize(datetime.combine(current_datetime.date(), interval_start))
+                    work_end = self.user_timezone.localize(datetime.combine(current_datetime.date(), interval_end))
+                    slot_start = max(work_start, round_up(current_datetime))
 
-                        if slot_start < work_end:
-                            free_slots.append((slot_start, work_end))
+                    for event in self.calendar:
+                        if event.start >= work_end:
+                            break
+                        if event.start < slot_start:
+                            if event.end > current_datetime:
+                                slot_start = event.end
+                            continue
+                        else:
+                            if event.start > slot_start:
+                                free_slots.append((slot_start, event.start))
+                            slot_start = min(event.end, work_end)
 
-                # Переход к следующему дню
-                current_datetime = (current_datetime + timedelta(days=1)).replace(
-                    hour=0, minute=0, second=0, microsecond=0
-                )
+                    if slot_start < work_end:
+                        free_slots.append((slot_start, work_end))
 
-            return free_slots
+            current_datetime = (current_datetime + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
 
-        except Exception as e:
-            raise ValueError(f"Error in find free slots: {e}")
+        return free_slots
 
     def schedule_tasks(self):
         """
@@ -229,16 +216,15 @@ class TaskScheduler:
                     task.blocks.append(
                         (round_up(slot_start), round_up(slot_start) + slot_duration)
                     )
+                    new_event = TaskEvent(
+                        tz=self.user_timezone,
+                        start=round_up(slot_start),
+                        end=round_up(slot_start) + slot_duration,
+                        task=task,
+                    )
+                    self.add_event(event=new_event)
                     duration_left -= slot_duration
                     current_datetime = slot_start.date() + slot_duration
-                    self.calendar.append(
-                        TaskEvent(
-                            tz=self.user_timezone,
-                            start=slot_start,
-                            end=slot_start + slot_duration,
-                            task=task,
-                        )
-                    )
 
                 current_datetime += timedelta(days=1)
 
@@ -246,7 +232,6 @@ class TaskScheduler:
 def schedule_tasks_for_user(user):
     """
     Планирует задачи для пользователя.
-
     Args:
         user (User): Объект пользователя.
 
@@ -261,9 +246,13 @@ def schedule_tasks_for_user(user):
         scheduler.add_task(task)
 
     scheduler.schedule_tasks()
+    events = []
 
     for task in scheduler.tasks:
         for block in task.blocks:
-            create_task_event(task, block[0], block[1], status=LockState.FREE)
+            new_event = create_task_event(
+                task, block[0], block[1], status=LockState.FREE
+            )
+            events.append(new_event)
 
-    return scheduler.tasks
+    return events

@@ -28,7 +28,11 @@
 
     &:focus {
       border-color: $blue-attention; 
-      background-color: #ffffff;
+      background-color: transparent;
+    }
+
+    &.error {
+      border-color: $error;
     }
   }
 
@@ -42,5 +46,13 @@
     top: 0;
     transform: translateY(-50%);
     background: linear-gradient(to top, #ffffff 0%, #ffffff 50%, transparent 50%, transparent 100%);
+  }
+
+  &__error-message {
+    @include small-light;
+    color: $error;
+    display: block;
+    margin-top: size(4px);
+    margin-left: size(5px);
   }
 }

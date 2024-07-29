@@ -17,6 +17,29 @@ const maxDuration = ref(90);
 const dueDate = ref(getTomorrow().toISOString());
 const hours = ref();
 
+const isNameFilled = ref(true);
+
+
+const validateForm = () => {
+  let isFormValid = true;
+
+  if (!name.value) {
+    isFormValid = false;
+    isNameFilled.value = false;
+  } 
+
+  return isFormValid
+}
+
+const nameInputHandler = () => {
+  if (isNameFilled.value) return
+
+  if (name.value) {
+    
+    isNameFilled.value = true;
+  }
+}
+
 const getFormData = () => {
   const data = {
     name: name.value,
@@ -45,6 +68,8 @@ const getFormData = () => {
 const submitHandler = async (e) => {
   e.preventDefault();
 
+  if (!validateForm()) return
+
   const csrftoken = getCookie('csrftoken');
 
   const formData = getFormData();
@@ -67,7 +92,10 @@ const submitHandler = async (e) => {
           class="input__input new-task-form__name-input"
           placeholder="Task name..."
           v-model="name"
+          :class="{'error': !isNameFilled}"
+          @input="nameInputHandler"
         >
+        <span class="input__error-message" v-if="!isNameFilled">Task title is required</span>
       </div>
 
       <PrioritySelectVue
@@ -138,7 +166,7 @@ const submitHandler = async (e) => {
       content: '';
       position: absolute;
       left: size(13px);
-      top: 50%;
+      top: size(21px);
       transform: translateY(-50%);
       display: block;
       width: size(20px);

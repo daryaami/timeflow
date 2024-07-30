@@ -4,9 +4,10 @@ import PrioritySelectVue from "./PrioritySelect.vue";
 import CheckboxVue from "../form/Checkbox.vue";
 import HoursSelectVue from "./HoursSelect.vue";
 import DateInputVue from "./DateInput.vue";
-import { ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { getTomorrow } from "@/components/js/time-utils";
 import { getCookie } from "@/components/js/getCookie";
+import { convertMinToTimeString } from "@/components/js/time-utils";
 
 const name = ref();
 const priority = ref();
@@ -18,6 +19,11 @@ const dueDate = ref(getTomorrow().toISOString());
 const hours = ref();
 
 const isNameFilled = ref(true);
+const isMinDurationrValid = ref(true);
+
+const minDurationErrorMessage = computed(() => {
+  return `Maximum duration is ${convertMinToTimeString(maxDuration.value)}`
+})
 
 
 const validateForm = () => {
@@ -28,6 +34,11 @@ const validateForm = () => {
     isNameFilled.value = false;
   } 
 
+  if (minDuration.value > maxDuration.value && isSplited.value) {
+    isFormValid = false;
+    isMinDurationrValid.value = false;
+  }
+
   return isFormValid
 }
 
@@ -35,7 +46,6 @@ const nameInputHandler = () => {
   if (isNameFilled.value) return
 
   if (name.value) {
-    
     isNameFilled.value = true;
   }
 }
@@ -82,6 +92,18 @@ const submitHandler = async (e) => {
     body: JSON.stringify(formData)
   });
 }
+
+watch(minDuration, (newValue) => {
+  if (newValue <= maxDuration.value) {
+    isMinDurationrValid.value = true;
+  }
+})
+
+watch(maxDuration, (newValue) => {
+  if (minDuration.value <= newValue) {
+    isMinDurationrValid.value = true;
+  }
+})
 </script>
 
 <template>
@@ -120,7 +142,8 @@ const submitHandler = async (e) => {
       <DurationInputVue
         label="Min duration"
         v-model="minDuration"
-
+        :isValid="!isMinDurationrValid"
+        :errorMessage = "minDurationErrorMessage"
       />
       <DurationInputVue 
         label="Max duration"

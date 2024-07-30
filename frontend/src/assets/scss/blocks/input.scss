@@ -18,11 +18,13 @@
     box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.2);
     background-color: #ffffff;
 
-    @include hover {
-      background-color: $dark-white;
-
-      & + .input__label {
-        background: linear-gradient(to top, $dark-white 0%, $dark-white 50%, transparent 50%, transparent 100%);
+    &:not(:focus) {
+      @include hover {
+        background-color: $dark-white;
+  
+        & + .input__label {
+          background: linear-gradient(to top, $dark-white 0%, $dark-white 50%, transparent 50%, transparent 100%);
+        }
       }
     }
 

@@ -39,9 +39,22 @@ const getStringTime = (time) => {
 const getTomorrow = () => {
   const date = new Date();
   date.setDate(date.getDate() + 1);
-  console.log(date)
   return date
 }
 
 
-export { getDecimalHours, getHours, getMinutes, getStringTime, getTomorrow }
+const convertMinToTimeString = (value) => {
+  const h = Math.floor(value / 60);
+  const m = value % 60;
+
+  if (h === 0) {
+    return`${m} min`;
+  } else if ((m === 0)) {
+    return`${h} hr`;
+  } else {
+    return `${h} hr ${m} min`;
+  }
+}
+
+
+export { getDecimalHours, getHours, getMinutes, getStringTime, getTomorrow, convertMinToTimeString }

@@ -1,7 +1,8 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue';
+import { convertMinToTimeString } from '@/components/js/time-utils';
 
-const props = defineProps(['label', 'buttons'])
+const props = defineProps(['label', 'buttons', 'isValid', 'errorMessage'])
 
 const duration = defineModel();
 const durationString = ref(null)
@@ -9,16 +10,7 @@ const forceUpdate = ref(0);
 
 watch([duration, forceUpdate], (newValues) => {
   const newValue = newValues[0];
-  const h = Math.floor(newValue / 60);
-  const m = newValue % 60;
-
-  if (h === 0) {
-    durationString.value = `${m} min`;
-  } else if ((m === 0)) {
-    durationString.value = `${h} hr`;
-  } else {
-    durationString.value = `${h} hr ${m} min`;
-  }
+  durationString.value = convertMinToTimeString(newValue)
 });
 
 const increaseDuration = () => {
@@ -97,10 +89,13 @@ onMounted(() => forceUpdate.value += 1)
 
 <template>
 <div class="duration-input input">
-  <input type="text" class="input__input" v-model="durationString"
+  <input type="text" class="input__input" 
+    :class="{'error': isValid}"
+    v-model="durationString"
     @blur="inputBlurHandler"
   >
   <span class="input__label">{{ label }}</span>
+  <span class="input__error-message" v-if="isValid">{{ errorMessage }}</span>
   
   <div class="duration-input__buttons" v-if="buttons">
     <button class="duration-input__button duration-input__button--minus"

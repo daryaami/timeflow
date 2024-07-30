@@ -66,7 +66,6 @@ def set_user_calendars_and_timezone(user, credentials, calendars_choice=None):
         for calendar in calendars_to_set:
             try:
                 new_calendar = UserCalendar.objects.update_or_create(user=user, calendar_id=calendar['id'], defaults={'summary': calendar['summary'], 'primary': calendar.get('primary', False), 'background_color':calendar.get('backgroundColor', None), 'foreground_color':calendar.get('foregroundColor', None)})
-                print(calendar)
             except IntegrityError as e:
                 print(f"Integrity error at {calendar['summary']} for user with email {user.email}. Calendar with this summary already exists.")
         return True

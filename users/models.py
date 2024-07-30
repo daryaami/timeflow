@@ -10,7 +10,7 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from app import settings
 from django.db.models import UniqueConstraint
-from main.models import Color
+from google_auth.exceptions import TokenRefreshError, CredentialsNotFoundError, InvalidGrantError, RefreshTokenMissing, RequestError
 
 
 class CustomUserManager(BaseUserManager):
@@ -71,9 +71,12 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
                         )
 
                         if refresh_request.status_code != 200:
-                            return ValueError(
-                                f"Failed to refresh token: {refresh_request.status_code}, {refresh_request.text}"
-                            )
+                            if refresh_request.status_code == 400 and "invalid_grant" in refresh_request.text:
+                                raise InvalidGrantError(refresh_request.text)
+                            else:
+                                raise TokenRefreshError(
+                                    refresh_request.status_code, refresh_request.text
+                                )
 
                         new_credentials = refresh_request.json()
 
@@ -86,9 +89,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
                         user_credentials.save()
 
                     except requests.RequestException as e:
-                        return ValueError(f"RequestException: {str(e)}")
+                        raise RequestError(f"RequestException: {str(e)}")
                     except Exception as e:
-                        return ValueError(f"Exception: {str(e)}")
+                        raise TokenRefreshError(None, f"Unexpected exception: {str(e)}")
 
                 # Create and return credentials
                 credentials = Credentials(
@@ -103,12 +106,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
                 return credentials
 
             else:
-                return ValueError(
-                    "User credentials not found or refresh token missing."
-                )
+                raise RefreshTokenMissing("Refresh token is missing.")
 
         except GoogleCredentials.DoesNotExist:
-            return ValueError("User credentials not found.")
+            raise CredentialsNotFoundError("User credentials not found.")
 
     def get_calendars(self):
         return UserCalendar.objects.filter(user=self)

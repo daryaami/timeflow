@@ -66,7 +66,7 @@ def login_callback(request):
 
 
 def register(request):
-    flow = flow = create_flow()
+    flow = create_flow()
 
     authorization_url, state = flow.authorization_url(
         access_type="offline",
@@ -242,20 +242,4 @@ def google_oauth(request):
     # Вход пользователя в Planner
     login(request, user)
     return redirect("main:planner")
-
-
-# def register(request):
-#     flow = flow = create_flow()
-
-#     authorization_url, state = flow.authorization_url(
-#         access_type="offline",
-#         prompt="consent",
-#     )
-
-#     request.session["state"] = state
-#     request.session["type"] = "register"
-#     return redirect(authorization_url)
-
-# def create_superuser_profile(request):
-#     user = request.user
 

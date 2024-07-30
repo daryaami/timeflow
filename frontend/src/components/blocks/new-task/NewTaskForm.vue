@@ -4,10 +4,15 @@ import PrioritySelectVue from "./PrioritySelect.vue";
 import CheckboxVue from "../form/Checkbox.vue";
 import HoursSelectVue from "./HoursSelect.vue";
 import DateInputVue from "./DateInput.vue";
+import TextareaVue from "../form/Textarea.vue";
+
 import { computed, ref, watch } from "vue";
 import { getTomorrow } from "@/components/js/time-utils";
 import { getCookie } from "@/components/js/getCookie";
 import { convertMinToTimeString } from "@/components/js/time-utils";
+
+const isNotes = ref(false);
+const isMinDurationrValid = ref(true);
 
 const name = ref();
 const priority = ref();
@@ -17,9 +22,10 @@ const minDuration = ref(30);
 const maxDuration = ref(90);
 const dueDate = ref(getTomorrow().toISOString());
 const hours = ref();
+const notes = ref(null);
 
 const isNameFilled = ref(true);
-const isMinDurationrValid = ref(true);
+
 
 const minDurationErrorMessage = computed(() => {
   return `Maximum duration is ${convertMinToTimeString(maxDuration.value)}`
@@ -51,7 +57,7 @@ const nameInputHandler = () => {
 }
 
 const getFormData = () => {
-  const data = {
+  let data = {
     name: name.value,
     priority: priority.value,
     duration: duration.value,
@@ -65,13 +71,17 @@ const getFormData = () => {
   }
 
   if (isSplited.value) {
-    return {
+    data = {
       ...data,
       ...durations,
     }
-  } else {
-    return data
   }
+
+  if (notes.value && isNotes.value) {
+    data.notes = notes.value;
+  }
+  
+  return data
 }
 
 
@@ -164,7 +174,24 @@ watch(maxDuration, (newValue) => {
         v-model="dueDate"
       />
     </div>
-    <button class="new-task-form__button">Create</button>
+
+    <TextareaVue 
+      v-if="isNotes"
+      v-model="notes"
+    />
+
+    
+
+    <div class="new-task-form__row">
+      <button class="new-task-form__icon-button"
+        @click.prevent="isNotes = !isNotes"
+      >
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12.5003 5H9.00025C7.60011 5 6.89953 5 6.36475 5.27249C5.89434 5.51216 5.51216 5.89434 5.27249 6.36475C5 6.89953 5 7.60011 5 9.00025V21.0002C5 22.4004 5 23.1001 5.27249 23.6349C5.51216 24.1052 5.89434 24.4881 6.36475 24.7277C6.899 25 7.59874 25 8.99614 25H21.0039C22.4013 25 23.1 25 23.6343 24.7277C24.1046 24.4881 24.4881 24.1049 24.7277 23.6345C25 23.1003 25 22.4013 25 21.0039V17.5M20 6.25L12.5 13.75V17.5H16.25L23.75 10M20 6.25L23.75 2.5L27.5 6.25L23.75 10M20 6.25L23.75 10" stroke="#3B61E8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button class="new-task-form__button">Create</button>
+    </div>
   </form>
 </template>
 
@@ -236,6 +263,13 @@ watch(maxDuration, (newValue) => {
 
   &__dates {
     gap: size(10px);
+  }
+
+  &__icon-button {
+    @include reset-button;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 </style>

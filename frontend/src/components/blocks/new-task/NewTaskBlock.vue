@@ -32,7 +32,9 @@ const openButtonHandler = () => {
     <button class="new-task__button" @click="openButtonHandler">+ New Task</button>
     <div class="new-task__popup" v-if="isPopupOpened">
       <button class="new-task__close-button" @click="closePopup"></button>
-      <new-task-form/>
+      <new-task-form
+        @successSubmit="isPopupOpened = false"
+      />
     </div>
   </div>
 </template>

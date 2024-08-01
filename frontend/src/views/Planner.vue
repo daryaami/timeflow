@@ -1,5 +1,7 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue';
+import { events } from '@/components/js/data/events';
+
 import PlannerHeaderVue from '../components/blocks/planner/PlannerHeader.vue';
 import LoaderVue from '../components/blocks/Loader.vue';
 import EventCardVue from '../components/blocks/planner/EventCard.vue';
@@ -43,7 +45,6 @@ const setTimeLineUpdate =  async () => {
 
 // Get events
 
-const events = ref([]);
 const isLoading = ref(true);
 
 const fetchData = async () => {

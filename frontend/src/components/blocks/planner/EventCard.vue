@@ -18,7 +18,7 @@ const time = computed(() => `${getStringTime(props.event.start.dateTime)} - ${ge
   <div class="event-card"
     :style='{
       top: `${position}%`,
-      height: `${height}%`,
+      height: `calc(${height}% - 2px)`,
       backgroundColor: `${event.background_color}`,
       color: `${event.foreground_color}`,
     }'

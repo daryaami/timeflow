@@ -56,5 +56,14 @@ const convertMinToTimeString = (value) => {
   }
 }
 
+const getStringDate = (dateString) => {
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
 
-export { getDecimalHours, getHours, getMinutes, getStringTime, getTomorrow, convertMinToTimeString }
+  return `${day}.${month}.${year}`;
+}
+
+
+export { getDecimalHours, getHours, getMinutes, getStringTime, getTomorrow, convertMinToTimeString, getStringDate }

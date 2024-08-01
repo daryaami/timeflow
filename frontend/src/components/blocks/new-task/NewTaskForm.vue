@@ -6,11 +6,14 @@ import HoursSelectVue from "./HoursSelect.vue";
 import DateInputVue from "./DateInput.vue";
 import TextareaVue from "../form/Textarea.vue";
 
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, defineEmits } from "vue";
 import { getTomorrow } from "@/components/js/time-utils";
 import { getCookie } from "@/components/js/getCookie";
 import { convertMinToTimeString } from "@/components/js/time-utils";
+import { updateEvents } from "@/components/js/data/events";
 
+
+const emit = defineEmits(['successSubmit']);
 const isNotes = ref(false);
 const isMinDurationrValid = ref(true);
 
@@ -28,7 +31,7 @@ const isNameFilled = ref(true);
 
 
 const minDurationErrorMessage = computed(() => {
-  return `Maximum duration is ${convertMinToTimeString(maxDuration.value)}`
+  return `Max duration is ${convertMinToTimeString(maxDuration.value)}`
 })
 
 
@@ -91,16 +94,26 @@ const submitHandler = async (e) => {
   if (!validateForm()) return
 
   const csrftoken = getCookie('csrftoken');
-
   const formData = getFormData();
-  let response = await fetch(`${window.location.origin}/task_api/create_task/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json;charset=utf-8',
-      'X-CSRFToken': csrftoken
-    },
-    body: JSON.stringify(formData)
-  });
+
+  let response;
+
+  try {
+    response = await fetch(`${window.location.origin}/task_api/create_task/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8',
+        'X-CSRFToken': csrftoken
+      },
+      body: JSON.stringify(formData)
+    }).then(data => data.json());
+  } catch (error) {
+    console.error('ошибка', error);
+    return
+  }
+
+  updateEvents(response.events);
+  emit('successSubmit');
 }
 
 watch(minDuration, (newValue) => {

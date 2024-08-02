@@ -186,7 +186,7 @@ class TaskScheduler:
         for task in self.tasks:
             duration_left = task.duration
             current_datetime = datetime.now(self.user_timezone)
-            max_duration = task.max_duration
+            max_duration = min(task.duration, task.max_duration)
             min_duration = task.min_duration
 
             while duration_left > timedelta(0) and current_datetime <= task.due_date:

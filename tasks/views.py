@@ -18,7 +18,9 @@ from .models import Task
 def get_tasks(request):
     user = request.user
     user_task_list = get_user_tasks(user)
-    return JsonResponse({"tasks": user_task_list})
+    tasks_json = [task.to_json() for task in user_task_list]
+    return JsonResponse({"tasks": tasks_json})
+
 
 @login_required
 def get_task_by_id(request, id):
@@ -30,6 +32,7 @@ def get_task_by_id(request, id):
         raise ValueError("Task does not exist")
     except Exception as e:
         raise ValueError(f"Exception: {e}")
+
 
 @login_required
 def create_task(request):

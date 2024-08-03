@@ -45,6 +45,8 @@ const openButtonHandler = () => {
 
     &__button {
       @include reset-button;
+      @include light-24;
+
       @include hover {
         color: $light-grey;
       }

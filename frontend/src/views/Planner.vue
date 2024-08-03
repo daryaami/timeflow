@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue';
 import { events } from '@/components/js/data/events';
+import { userData } from '@/components/js/data/userData';
 
 import PlannerHeaderVue from '../components/blocks/planner/PlannerHeader.vue';
 import LoaderVue from '../components/blocks/Loader.vue';
@@ -8,6 +9,7 @@ import EventCardVue from '../components/blocks/planner/EventCard.vue';
 import { getEvents } from '@/components/js/getEvents';
 import { getStringTime, getDecimalHours } from '@/components/js/time-utils';
 import PlannerDateVue from '../components/blocks/planner/PlannerDate.vue';
+import RightSidebarVue from '@/components/blocks/planner/RightSidebar.vue';
 
 
 // Current time line 
@@ -161,58 +163,67 @@ const lines = [
 </script>
 
 <template>
-  <div class="planner">
-    <PlannerHeaderVue />
-    <div class="planner__loader-wrapper" v-if="isLoading">
-      <LoaderVue />
-    </div>
-    <div class="planner__grid-wrapper" v-if="!isLoading">
-      <div class="planner__days-header">
-        <PlannerDateVue 
-          v-for="day in events"
-          :key="day.date" 
-          :date="day.date"
-        />
+  <div class="planner-wrapper">
+    <div class="planner">
+      <PlannerHeaderVue />
+      <div class="planner__loader-wrapper" v-if="isLoading">
+        <LoaderVue />
       </div>
-      <div class="planner__grid">
-        <div class="planner__day-column"
-          v-for="day in events"
-          :key="day.date"  
-        >
-          <EventCardVue 
-            v-for="event, i in day.events"
-            :key="i"
-            :event="event"
+      <div class="planner__grid-wrapper" v-if="!isLoading">
+        <div class="planner__days-header">
+          <PlannerDateVue 
+            v-for="day in events"
+            :key="day.date" 
+            :date="day.date"
           />
         </div>
-        <div class="planner__line"
-          v-for="(line, i) in lines"
-          :key="i"
-          :style="{ top: `${line.percent}%` }"
-        >
-          <div class="planner__line-time">{{ line.time }}</div>
-        </div>
+        <div class="planner__grid">
+          <div class="planner__day-column"
+            v-for="day in events"
+            :key="day.date"  
+          >
+            <EventCardVue 
+              v-for="event, i in day.events"
+              :key="i"
+              :event="event"
+            />
+          </div>
+          <div class="planner__line"
+            v-for="(line, i) in lines"
+            :key="i"
+            :style="{ top: `${line.percent}%` }"
+          >
+            <div class="planner__line-time">{{ line.time }}</div>
+          </div>
 
-        <div class="planner__line planner__line--now"
-          :style="{ top: `${nowTimeLine.styleTop}` }"
-          ref="timeLineEl"
-        >
-          <div class="planner__line-time">{{ nowTimeLine.caption }}</div>
+          <div class="planner__line planner__line--now"
+            :style="{ top: `${nowTimeLine.styleTop}` }"
+            ref="timeLineEl"
+          >
+            <div class="planner__line-time">{{ nowTimeLine.caption }}</div>
+          </div>
         </div>
       </div>
+      
     </div>
-    
+    <RightSidebarVue v-if="userData"/>
   </div>
   
   
 </template>
 
 <style lang="scss">
+  .planner-wrapper {
+    display: flex;
+    overflow: hidden;
+  }
+
   .planner {
     height: 100%;
     display: grid;
     grid-template-rows: auto 1fr;
     overflow: hidden;
+    flex-grow: 1;
 
     &__loader-wrapper {
       display: flex;

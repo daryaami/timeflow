@@ -1,0 +1,9 @@
+@function size($size) {
+  $remSize: calc($size / $font-size-main);
+  @return #{$remSize}rem;
+}
+
+@function size-desktop($size) {
+  $vwSize: calc($size / 1920px * 100);
+  @return #{$vwSize}vw;
+}

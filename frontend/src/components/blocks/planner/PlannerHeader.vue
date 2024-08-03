@@ -32,6 +32,7 @@ export default {
   padding: size(21px) size(27px) size(21px) size(46px);
 
   &__date {
+    @include bold-title-24;
     font-weight: 400;
     display: flex;
     gap: size(49px);

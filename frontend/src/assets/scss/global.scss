@@ -1,6 +1,7 @@
 @use "sass:math";
 
 @import './variables.scss';
+@import './mixins/functions.scss';
 @import './mixins/mixins.scss';
 @import './mixins/fonts.scss';
 @import './mixins/icons.scss';
@@ -8,15 +9,6 @@
 @import './transitions/dropdown-transitions.scss';
 
 
-@view-transition {
-  navigation: auto;
-}
-
-$baseWidth: 1600px;
-
-@function size($size) {
-  @return math.div($size, $baseWidth) * 100vw;
-}
 
 * {
   box-sizing: border-box;
@@ -24,7 +16,7 @@ $baseWidth: 1600px;
 
 html {
   height: 100%;
-  font-size: 16px;
+  font-size: size-desktop(20px);
 }
 
 #app {

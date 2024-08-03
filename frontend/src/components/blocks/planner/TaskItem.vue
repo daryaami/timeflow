@@ -51,6 +51,7 @@ const props = defineProps(['task'])
     background-size: 100%;
     cursor: pointer;
     transition: .1s;
+    flex-shrink: 0;
 
     &:has(:checked) {
       @include checked-checkbox;

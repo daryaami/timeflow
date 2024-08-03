@@ -61,7 +61,7 @@ activeTab.value = tasksButton.value;
 
 <style lang="scss">
 .right-sidebar {
-  width: size(406px);
+  width: size(380px);
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -123,9 +123,9 @@ activeTab.value = tasksButton.value;
   width: 100%;
   flex-basis: 100%;
   flex-shrink: 1;
-  padding: size(34px) size(27px) 0 size(29px);
+  padding: size(34px) size(16px) 0 size(16px);
   display: flex;
   flex-direction: column;
-  gap: size(27px);
+  gap: size(16px);
 }
 </style>

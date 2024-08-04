@@ -50,7 +50,7 @@ watch(currentOption, (newValue) => {
 
 <template>
   <div class="priority-select dropdown-wrapper">
-    <button class="priority-select__button"
+    <button class="priority-select__button icon-button"
       @click="dropdownClickHandler"
     >
       <component :is="currentOption.icon"></component>
@@ -93,10 +93,6 @@ watch(currentOption, (newValue) => {
       display: block;
       width: size(30px);
       height: size(30px);
-    }
-
-    @include hover {
-      background-color: $dark-white;
     }
   }
 

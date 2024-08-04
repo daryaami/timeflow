@@ -11,6 +11,8 @@ import { getStringTime, getDecimalHours } from '@/components/js/time-utils';
 import PlannerDateVue from '../components/blocks/planner/PlannerDate.vue';
 import RightSidebarVue from '@/components/blocks/planner/RightSidebar.vue';
 
+const isSidebarOpened = ref(true);
+
 
 // Current time line 
 
@@ -165,7 +167,9 @@ const lines = [
 <template>
   <div class="planner-wrapper">
     <div class="planner">
-      <PlannerHeaderVue />
+      <PlannerHeaderVue 
+        v-model="isSidebarOpened"
+      />
       <div class="planner__loader-wrapper" v-if="isLoading">
         <LoaderVue />
       </div>
@@ -206,7 +210,9 @@ const lines = [
       </div>
       
     </div>
-    <RightSidebarVue v-if="userData"/>
+    <RightSidebarVue v-if="userData"
+      :isOpened="isSidebarOpened"
+    />
   </div>
   
   

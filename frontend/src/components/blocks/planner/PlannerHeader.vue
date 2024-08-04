@@ -1,3 +1,11 @@
+<script setup>
+const props = defineProps('isSidebarOpened');
+
+const isSidebarOpened = defineModel();
+
+
+</script>
+
 <template>
   <header class="planner-header">
     <div class="planner-header__date">
@@ -7,25 +15,17 @@
         <button class="planner-header__date-button planner-header__date-button--next"></button>
       </div>
 
-      <button 
-        class="sidebar-hide"
-        :class="{rotated: isSidebarHidden}"
-        @click="$emit('update:isSidebarHidden', !isSidebarHidden)"
-      ></button>
+
+      <label class="sidebar-hide icon-button"
+        :class="{rotated: !isSidebarOpened}"
+      >
+        <input type="checkbox" class="visually-hidden"
+          v-model="isSidebarOpened"
+        >
+      </label>
     </div>
   </header>
 </template>
-
-<script>
-export default {
-  props: {
-    isSidebarHidden: Boolean,
-  },
-  emits: {
-    'update:isSidebarHidden': Boolean,
-  },
-}
-</script>
 
 <style lang="scss">
 .planner-header {
@@ -62,11 +62,12 @@ export default {
 
   .sidebar-hide {
     margin-left: auto;
-    @include reset-button;
     @include sidebar-hide;
+    background-position: center;
     background-size: size(24px) size(24px);
-    width: size(32px);
-    height: size(32px);
+    width: size(48px);
+    height: size(48px);
+    cursor: pointer;
 
     &.rotated {
       transform: rotate(180deg);

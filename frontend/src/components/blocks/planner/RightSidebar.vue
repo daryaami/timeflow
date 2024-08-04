@@ -3,6 +3,8 @@ import { onMounted, ref, watch } from 'vue';
 import { userData } from '@/components/js/data/userData';
 import TaskItemVue from './TaskItem.vue';
 
+const props = defineProps(['isOpened'])
+
 const underlineRight = ref();
 const underlineLeft = ref();
 const habitsButton = ref(null);
@@ -12,19 +14,21 @@ const activeTab = ref(null);
 const tasks = ref(userData.value.tasks);
 
 onMounted(() => {
-  console.log(habitsButton)
+  activeTab.value = tasksButton.value; 
 })
 
 watch(activeTab, () => {
   underlineRight.value.style.transform = `translateX(${activeTab.value.offsetLeft}px)`;
   underlineLeft.value.style.transform = `translateX(${activeTab.value.offsetLeft}px)`;
 })
-
-activeTab.value = tasksButton.value; 
 </script>
 
 <template>
-  <div class="right-sidebar">
+  <div class="right-sidebar"
+    :class="{
+      'hidden': !isOpened,
+    }"
+  >
     <div class="right-sidebar__tabs">
       <button
         ref="habitsButton"

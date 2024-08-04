@@ -1,0 +1,9 @@
+.icon-button {
+  border-radius: 50%;
+  transition: .15s;
+
+  @include hover {
+    background-color: $dark-white;
+  }
+
+}

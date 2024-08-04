@@ -31,7 +31,7 @@ const openButtonHandler = () => {
   <div class="new-task">
     <button class="new-task__button" @click="openButtonHandler">+ New Task</button>
     <div class="new-task__popup" v-if="isPopupOpened">
-      <button class="new-task__close-button" @click="closePopup"></button>
+      <button class="new-task__close-button icon-button" @click="closePopup"></button>
       <new-task-form
         @successSubmit="isPopupOpened = false"
       />
@@ -71,8 +71,8 @@ const openButtonHandler = () => {
       position: absolute;
       right: size(32px);
       top: size(25px);
-      height: size(24px);
-      width: size(24px);
+      height: size(32px);
+      width: size(32px);
     }
   }
 </style>

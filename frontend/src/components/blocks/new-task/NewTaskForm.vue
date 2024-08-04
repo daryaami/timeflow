@@ -112,7 +112,7 @@ const submitHandler = async (e) => {
     return
   }
 
-  updateEvents(response.events);
+  // updateEvents(response.events);
   emit('successSubmit');
 }
 

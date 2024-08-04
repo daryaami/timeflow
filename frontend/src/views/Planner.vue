@@ -1,18 +1,18 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue';
-import { events } from '@/components/js/data/events';
+import { events, getNextWeekEvents } from '@/components/js/data/events';
 import { userData } from '@/components/js/data/userData';
 
 import PlannerHeaderVue from '../components/blocks/planner/PlannerHeader.vue';
 import LoaderVue from '../components/blocks/Loader.vue';
 import EventCardVue from '../components/blocks/planner/EventCard.vue';
-import { getEvents } from '@/components/js/getEvents';
+import { getEvents } from '@/components/js/data/events';
 import { getStringTime, getDecimalHours } from '@/components/js/time-utils';
 import PlannerDateVue from '../components/blocks/planner/PlannerDate.vue';
 import RightSidebarVue from '@/components/blocks/planner/RightSidebar.vue';
 
 const isSidebarOpened = ref(true);
-
+const currentWeekEvents = ref(null)
 
 // Current time line 
 
@@ -53,7 +53,7 @@ const isLoading = ref(true);
 
 const fetchData = async () => {
   try {
-    events.value = await getEvents();
+    currentWeekEvents.value = await getEvents();
   } catch (error) {
     console.error('ошибка', error);
   } finally {
@@ -62,11 +62,27 @@ const fetchData = async () => {
   }
 }
 
+const nextWeekHandler = async () => {
+  isLoading.value = true;
+  
+  const newEvents = await getNextWeekEvents(currentWeekEvents.value.mon.date);
+
+  currentWeekEvents.value = newEvents;
+  isLoading.value = false;
+}
+
+const prevWeekHandler = async () => {
+  isLoading.value = true;
+  
+  const newEvents = await getNextWeekEvents(currentWeekEvents.value.mon.date);
+
+  currentWeekEvents.value = newEvents;
+  isLoading.value = false;
+}
+
 onMounted(() => {
   fetchData();
 })
-
-
 
 const lines = [
   {
@@ -169,6 +185,8 @@ const lines = [
     <div class="planner">
       <PlannerHeaderVue 
         v-model="isSidebarOpened"
+        @prevWeek="prevWeekHandler"
+        @nextWeek="nextWeekHandler"
       />
       <div class="planner__loader-wrapper" v-if="isLoading">
         <LoaderVue />
@@ -176,14 +194,14 @@ const lines = [
       <div class="planner__grid-wrapper" v-if="!isLoading">
         <div class="planner__days-header">
           <PlannerDateVue 
-            v-for="day in events"
+            v-for="day in currentWeekEvents"
             :key="day.date" 
             :date="day.date"
           />
         </div>
         <div class="planner__grid">
           <div class="planner__day-column"
-            v-for="day in events"
+            v-for="day in currentWeekEvents"
             :key="day.date"  
           >
             <EventCardVue 

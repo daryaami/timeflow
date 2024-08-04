@@ -3,7 +3,7 @@ import { defineProps, computed } from 'vue';
 
 const props = defineProps(['date']);
 
-const [day, month, year] = props.date.split('.').map(Number);
+const [year, month, day] = props.date.split('-').map(Number);
 const date = new Date(year, month - 1, day);
 
 const weekday = computed(() => {

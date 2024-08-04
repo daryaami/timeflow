@@ -1,6 +1,8 @@
 <script setup>
 import { computed } from 'vue';
 
+const emit = defineEmits(['prevWeek', 'nextWeek']);
+
 const props = defineProps('isSidebarOpened');
 
 const isSidebarOpened = defineModel();
@@ -15,8 +17,12 @@ const month = computed(() => {
   <header class="planner-header">
     <span class="planner-header__date">{{ month }}</span>
     <div class="planner-header__buttons">
-      <button class="planner-header__date-button planner-header__date-button--prev icon-button"></button>
-      <button class="planner-header__date-button planner-header__date-button--next icon-button"></button>
+      <button class="planner-header__date-button planner-header__date-button--prev icon-button"
+        @click="emit('prevWeek')"
+      ></button>
+      <button class="planner-header__date-button planner-header__date-button--next icon-button"
+        @click="emit('nextWeek')"
+      ></button>
     </div>
 
 

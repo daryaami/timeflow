@@ -6,9 +6,8 @@ const props = defineProps(['date']);
 const [day, month, year] = props.date.split('.').map(Number);
 const date = new Date(year, month - 1, day);
 
-const text = computed(() => {
-  const text = date.toLocaleDateString('en-EN', { weekday: 'short' })
-  return `${text} ${date.getDate()}`;
+const weekday = computed(() => {
+  return date.toLocaleDateString('en-EN', { weekday: 'short' });
 })
 
 const isToday = computed(() => {
@@ -21,23 +20,74 @@ const isToday = computed(() => {
 </script>
 
 <template>
-  <span class="planner-date"
+  <div class="planner-date"
     :class="{'current': isToday}"
-  >{{ text }}</span>
+  > 
+    <span class="planner-date__weekday">{{ weekday }}</span>
+    <div class="planner-date__day">
+        <span>{{ day }}</span>
+    </div>
+  </div>
 </template>
 
 <style lang="scss">
   .planner-date {
-    @include bold-18;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     width: 100%;
-    height: size(32px);
     background-color: $white;
+    padding-bottom: size(12px);
+    position: relative;
+
+    &::before {
+      content: '';
+      display: block;
+      width: 1px;
+      height: size(45px);
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      border-left: 1px solid $dark-lines;
+    }
 
     &.current {
-      color: $blue-attention;
+      & .planner-date__weekday {
+        color: $blue-attention;
+      }
+
+      & .planner-date__day {
+        color: $white;
+        position: relative;
+
+        & span {
+          position: relative;
+          z-index: 2;
+        }
+
+        &::before {
+          content: '';
+          display: block;
+          width: size(40px);
+          height: size(40px);
+          background-color: $blue-attention;
+          border-radius: 50%;
+          position: absolute;
+          left: 50%;
+          top: calc(50% + size(2px));
+          transform: translate(-50%, -50%)
+        }
+      }
+    }
+
+    &__weekday {
+      @include small-bold;
+      display: block;
+      margin-bottom: size(3px);
+      text-align: center;
+    }
+
+    &__day {
+      @include header;
+      display: block;
+      text-align: center;
     }
   }
 </style>

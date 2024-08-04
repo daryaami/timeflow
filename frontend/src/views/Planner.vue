@@ -266,6 +266,9 @@ const lines = [
       top: 0;
       left: 0;
       z-index: 100;
+      padding-left: size(79px);
+      margin-left: size(-79px);
+      background-color: $white;
     }
 
     &__line {

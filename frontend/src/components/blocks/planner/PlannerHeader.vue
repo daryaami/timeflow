@@ -1,55 +1,60 @@
 <script setup>
+import { computed } from 'vue';
+
 const props = defineProps('isSidebarOpened');
 
 const isSidebarOpened = defineModel();
 
-
+const month = computed(() => {
+  const now = new Date();
+  return `${now.toLocaleString('default', { month: 'long' })} ${now.getFullYear()}`;
+})
 </script>
 
 <template>
   <header class="planner-header">
-    <div class="planner-header__date">
-      <span>February 2024</span>
-      <div class="planner-header__date-buttons">
-        <button class="planner-header__date-button planner-header__date-button--prev"></button>
-        <button class="planner-header__date-button planner-header__date-button--next"></button>
-      </div>
-
-
-      <label class="sidebar-hide icon-button"
-        :class="{rotated: !isSidebarOpened}"
-      >
-        <input type="checkbox" class="visually-hidden"
-          v-model="isSidebarOpened"
-        >
-      </label>
+    <span class="planner-header__date">{{ month }}</span>
+    <div class="planner-header__buttons">
+      <button class="planner-header__date-button planner-header__date-button--prev icon-button"></button>
+      <button class="planner-header__date-button planner-header__date-button--next icon-button"></button>
     </div>
+
+
+    <label class="sidebar-hide icon-button"
+      :class="{rotated: !isSidebarOpened}"
+    >
+      <input type="checkbox" class="visually-hidden"
+        v-model="isSidebarOpened"
+      >
+    </label>
   </header>
 </template>
 
 <style lang="scss">
 .planner-header {
-  padding: size(21px) size(27px) size(21px) size(46px);
+  padding-left: size(79px);
+  padding-right: size(24px);
+  height: size(80px);
+  display: flex;
+  align-items: center;
 
   &__date {
     @include bold-title-24;
-    font-weight: 400;
-    display: flex;
-    gap: size(49px);
-    align-items: center;
   }
 
-  &__date-buttons {
+  &__buttons {
     display: flex;
-    gap: size(27px);
+    margin-left: size(87px);
+    gap: size(14px);
   }
 
   &__date-button {
     @include reset-button;
     display: block;
-    width: size(25px);
-    height: size(25px);
-    background-size: 100%;
+    width: size(36px);
+    height: size(36px);
+    background-size: size(24px) size(24px);
+    background-position: center;
 
     &--prev {
       @include chevron-left;
@@ -68,6 +73,7 @@ const isSidebarOpened = defineModel();
     width: size(48px);
     height: size(48px);
     cursor: pointer;
+    margin-left: auto;
 
     &.rotated {
       transform: rotate(180deg);

@@ -91,7 +91,7 @@ def get_all_events_by_weekday(user, credentials, date_param=None):
     start_of_week = calendar_date - timedelta(days=calendar_date.weekday())
 
     days_of_week = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
-    events_by_weekday = {day: {"date": (start_of_week + timedelta(days=i)).strftime("%d.%m.%Y"), "events": []} for i, day in enumerate(days_of_week)}
+    events_by_weekday = {day: {"date": (start_of_week + timedelta(days=i)).strftime('%Y-%m-%d'), "events": []} for i, day in enumerate(days_of_week)}
 
     all_events = get_all_user_events(user=user, credentials=credentials, start_date=start_of_week, time_interval=timedelta(days=7))
 

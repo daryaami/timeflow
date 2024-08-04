@@ -14,8 +14,13 @@ const height = computed(() => {
 })
 
 const time = computed(() => `${startTime.value} - ${getStringTime(props.event.end.dateTime)}`);
-
-console.log(duration.value)
+const isPast = computed(() => {
+  if (new Date(props.event.end.dateTime) < new Date()) {
+    return true
+  } else {
+    return false
+  }
+})
 </script>
 
 <template>
@@ -30,6 +35,7 @@ console.log(duration.value)
     :class="{
       'no-padding': duration <= .25,
       'no-right-padding': duration <= .5,
+      'past': isPast,
     }"
   >
     <div v-if="duration <= 0.5"
@@ -76,6 +82,10 @@ console.log(duration.value)
 
   &.no-right-padding {
     padding-right: 0;
+  }
+
+  &.past {
+    opacity: .5;
   }
 
   &__short-wrapper {

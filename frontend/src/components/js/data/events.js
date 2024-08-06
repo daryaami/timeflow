@@ -34,13 +34,18 @@ const updateEvents = (newEvents) => {
 
 const getNextWeekEvents = async (date) => {
   const currentDate = new Date(date);
-  console.log(currentDate);
-
   const nextMonday = new Date(currentDate);
-  
   nextMonday.setDate(currentDate.getDate() + 7);
+
+  const nextMondayString = getStringDate(nextMonday)
+
+  const findedEvents = events.value.find(el => el.mon.date === nextMondayString)
+
+  if (findedEvents) {
+    return findedEvents;
+  }
   
-  const newEvents = await getEvents(getStringDate(nextMonday))
+  const newEvents = await getEvents(getStringDate(nextMondayString))
 
   events.value.push(newEvents);
 
@@ -60,7 +65,7 @@ const getPrevWeekEvents = async (date) => {
     return findedEvents;
   }
   
-  const newEvents = await getEvents(prevMonday)
+  const newEvents = await getEvents(prevMondayString)
 
   events.value.push(newEvents);
 

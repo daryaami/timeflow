@@ -1,21 +1,14 @@
 <script setup>
-import { computed } from 'vue';
-
 const emit = defineEmits(['prevWeek', 'nextWeek']);
 
-const props = defineProps('isSidebarOpened');
+const props = defineProps(['isSidebarOpened', 'currentMonth']);
 
 const isSidebarOpened = defineModel();
-
-const month = computed(() => {
-  const now = new Date();
-  return `${now.toLocaleString('default', { month: 'long' })} ${now.getFullYear()}`;
-})
 </script>
 
 <template>
   <header class="planner-header">
-    <span class="planner-header__date">{{ month }}</span>
+    <span class="planner-header__date">{{ currentMonth }}</span>
     <div class="planner-header__buttons">
       <button class="planner-header__date-button planner-header__date-button--prev icon-button"
         @click="emit('prevWeek')"
@@ -46,6 +39,8 @@ const month = computed(() => {
 
   &__date {
     @include bold-title-24;
+    display: block;
+    width: size(200px);
   }
 
   &__buttons {

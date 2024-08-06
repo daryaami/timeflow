@@ -1,6 +1,6 @@
 <script setup>
-import { ref, onMounted, nextTick } from 'vue';
-import { events, getNextWeekEvents } from '@/components/js/data/events';
+import { ref, onMounted, nextTick, computed, watch } from 'vue';
+import { getPrevWeekEvents, getNextWeekEvents, events } from '@/components/js/data/events';
 import { userData } from '@/components/js/data/userData';
 
 import PlannerHeaderVue from '../components/blocks/planner/PlannerHeader.vue';
@@ -16,7 +16,7 @@ const currentWeekEvents = ref(null)
 
 // Current time line 
 
-const timeLineEl = ref(null)
+const timeLineEl = ref(null);
 
 const nowTimeLine = ref({
   caption: '',
@@ -63,26 +63,31 @@ const fetchData = async () => {
 }
 
 const nextWeekHandler = async () => {
+  if (isLoading.value) return
   isLoading.value = true;
   
   const newEvents = await getNextWeekEvents(currentWeekEvents.value.mon.date);
 
   currentWeekEvents.value = newEvents;
   isLoading.value = false;
+  await nextTick();
+  timeLineEl.value.scrollIntoView({ block: "center" });
 }
 
 const prevWeekHandler = async () => {
+  if (isLoading.value) return
   isLoading.value = true;
   
-  const newEvents = await getNextWeekEvents(currentWeekEvents.value.mon.date);
+  const newEvents = await getPrevWeekEvents(currentWeekEvents.value.mon.date);
 
   currentWeekEvents.value = newEvents;
   isLoading.value = false;
+  await nextTick();
+  timeLineEl.value.scrollIntoView({ block: "center" });
 }
 
-onMounted(() => {
-  fetchData();
-})
+
+
 
 const lines = [
   {
@@ -178,6 +183,21 @@ const lines = [
     percent: 2300 / 24,
   },
 ]
+
+// Current Month
+
+const currentMonth = computed(() => {
+  if (currentWeekEvents.value) {
+    const now = new Date(currentWeekEvents.value.mon.date);
+    return `${now.toLocaleString('default', { month: 'long' })} ${now.getFullYear()}`;
+  } else {
+    return ''
+  }
+})
+
+onMounted(() => {
+  fetchData();
+})
 </script>
 
 <template>
@@ -185,6 +205,7 @@ const lines = [
     <div class="planner">
       <PlannerHeaderVue 
         v-model="isSidebarOpened"
+        :currentMonth="currentMonth"
         @prevWeek="prevWeekHandler"
         @nextWeek="nextWeekHandler"
       />

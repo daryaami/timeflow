@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import { getDecimalHours, getStringTime } from '@/components/js/time-utils';
 
-const props = defineProps(['event']);
+const props = defineProps(['event', 'gridHeight']);
 
 const duration = ref(getDecimalHours(props.event.end.dateTime) - getDecimalHours(props.event.start.dateTime))
 const startTime = ref(getStringTime(props.event.start.dateTime));
@@ -21,10 +21,25 @@ const isPast = computed(() => {
     return false
   }
 })
+
+// Grid
+const grid = computed(() => {
+  if (props.gridHeight) {
+    return [10, props.gridHeight / 96]
+  } else {
+    return [0, 0]
+  }
+})
 </script>
 
 <template>
-  <div class="event-card"
+  <vue-draggable-resizable 
+    class="event-card"
+    v-if="gridHeight"
+    :axis="'y'"
+    :grid="grid"
+    :handles="['tm', 'bm']"
+    :active="true"
     :style='{
       top: `${position}%`,
       height: `calc(${height}% - 2px)`,
@@ -56,24 +71,27 @@ const isPast = computed(() => {
     <span class="event-card__time"
       v-if="duration > 0.5"
     >{{ time }}</span>
-  </div>
-  
+  </vue-draggable-resizable>
 </template>
 
 <style lang="scss">
+
+@import "vue-draggable-resizable/style.css";
 .event-card {
   padding: size(8px);
   background-color: #E68D8D;
   color: $white;
   border-radius: size(10px);
   height: size(90px);
-  width: calc(100% - size(15px));
+  width: calc(100% - size(15px))!important;
   position: absolute;
   left: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: start;
+  border: none;
+  cursor: pointer;
 
   &.no-padding {
     padding-top: 0;

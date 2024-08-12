@@ -96,15 +96,29 @@ def get_all_events_by_weekday(user, credentials, date_param=None):
     all_events = get_all_user_events(user=user, credentials=credentials, start_date=start_of_week, time_interval=timedelta(days=7))
 
     for event in all_events:
-        event_start = event['start'].get('dateTime', event['start'].get('date'))
-        if 'dateTime' in event['start']:
-            event_date = datetime.fromisoformat(event_start).astimezone(tz).date()
-        else:
-            event_date = datetime.strptime(event_start, '%Y-%m-%d').date()
-        
-        weekday = event_date.weekday()
-        day_key = days_of_week[weekday]
-        events_by_weekday[day_key]["events"].append(event)
+        if event['summary'] == 'Байкал':
+            event_start = event['start'].get('dateTime', event['start'].get('date'))
+            event_end = event['end'].get('dateTime', event['end'].get('date'))
+
+            print(event_start)
+            
+            if 'dateTime' in event['start']:
+                event_start = datetime.fromisoformat(event_start).astimezone(tz)
+                event_end = datetime.fromisoformat(event_end).astimezone(tz)
+                event['start']['dateTime'] = event_start.isoformat()
+                event['end']['dateTime'] = event_end.isoformat()
+                event_date = event_start.date()
+
+            else:
+                event_date = datetime.strptime(event_start, '%Y-%m-%d').date()
+
+            weekday = event_date.weekday()
+            day_key = days_of_week[weekday]
+
+            print(day_key)
+            print(event['start'])
+
+            events_by_weekday[day_key]["events"].append(event)
     
     return {"days": events_by_weekday}
 

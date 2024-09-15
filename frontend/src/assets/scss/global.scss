@@ -16,7 +16,9 @@
 
 html {
   height: 100%;
-  font-size: size-desktop(20px);
+  font-size: size-desktop($font-size-main);
+  // font-size: $font-size-main;
+
 }
 
 #app {

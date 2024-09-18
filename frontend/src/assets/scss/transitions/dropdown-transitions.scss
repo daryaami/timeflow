@@ -1,9 +1,10 @@
 .dropdown-enter-active,
 .dropdown-leave-active {
-  transition: 0.2s ease;
+  transition: 0.2s ease;  
 }
 
 .dropdown-enter-from,
 .dropdown-leave-to {
   opacity: 0;
+  scale: .9;
 }

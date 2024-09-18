@@ -6,6 +6,7 @@ import HoursSelectVue from "./HoursSelect.vue";
 import DateInputVue from "./DateInput.vue";
 import TextareaVue from "../form/Textarea.vue";
 import PrivateCheckbox from "./PrivateCheckbox.vue";
+import growHeightTransition from "@/components/transitions/growHeightTransition.vue";
 
 import { computed, ref, watch, defineEmits } from "vue";
 import { getTomorrow } from "@/components/js/time-utils";
@@ -133,88 +134,97 @@ watch(maxDuration, (newValue) => {
 </script>
 
 <template>
-  <form class="new-task-form" @submit="submitHandler">
-    <div class="new-task-form__row">
-      <div class="new-task-form__name-wrapper input">
-        <input type="text" 
-          class="input__input new-task-form__name-input"
-          placeholder="Task name..."
-          v-model="name"
-          :class="{'error': !isNameFilled}"
-          @input="nameInputHandler"
-        >
-        <span class="input__error-message" v-if="!isNameFilled">Task title is required</span>
+  
+    <form class="new-task-form" @submit="submitHandler">
+      <div class="new-task-form__row">
+        <div class="new-task-form__name-wrapper input">
+          <input type="text" 
+            class="input__input new-task-form__name-input"
+            placeholder="Task name..."
+            v-model="name"
+            :class="{'error': !isNameFilled}"
+            @input="nameInputHandler"
+          >
+          <span class="input__error-message" v-if="!isNameFilled">Task title is required</span>
+        </div>
+
+        <PrioritySelectVue
+          v-model="priority"
+        />
       </div>
 
-      <PrioritySelectVue
-        v-model="priority"
-      />
-    </div>
+      <div class="new-task-form__row">
+        <DurationInputVue
+          label="Duration"
+          :buttons="true"
+          v-model="duration"
+        />
+        <CheckboxVue 
+          class="new-task-form__split-check"
+          label="Split up"
+          v-model="isSplited"
+        />
+      </div>
+      
+      <growHeightTransition>
+        <div class="new-task-form__durations" v-if="isSplited">
+          <DurationInputVue
+            label="Min duration"
+            v-model="minDuration"
+            :buttons="true"
+            :isValid="!isMinDurationrValid"
+            :errorMessage = "minDurationErrorMessage"
+          />
+          <DurationInputVue 
+            label="Max duration"
+            :buttons="true"
+            v-model="maxDuration"
+          />
+        </div>
+      </growHeightTransition>
 
-    <div class="new-task-form__row">
-      <DurationInputVue
-        label="Duration"
-        :buttons="true"
-        v-model="duration"
+      <HoursSelectVue
+        v-model="hours"
       />
-      <CheckboxVue 
-        class="new-task-form__split-check"
-        label="Split up"
-        v-model="isSplited"
-      />
-    </div>
 
-    <div class="new-task-form__durations" v-if="isSplited">
-      <DurationInputVue
-        label="Min duration"
-        v-model="minDuration"
-        :isValid="!isMinDurationrValid"
-        :errorMessage = "minDurationErrorMessage"
-      />
-      <DurationInputVue 
-        label="Max duration"
-        v-model="maxDuration"
-      />
-    </div>
+      <div class="new-task-form__row new-task-form__dates">
+        <DateInputVue
+          label="Schedule after"
+        />
+        <DateInputVue
+          label="Due date"
+          v-model="dueDate"
+        />
+      </div>
 
-    <HoursSelectVue
-      v-model="hours"
-    />
-
-    <div class="new-task-form__row new-task-form__dates">
-      <DateInputVue
-        label="Schedule after"
-      />
-      <DateInputVue
-        label="Due date"
-        v-model="dueDate"
-      />
-    </div>
-
-    <TextareaVue 
-      v-if="isNotes"
-      v-model="notes"
-    />
-
+      <growHeightTransition>
+        <div class="new-task-form__notes-wrapper"
+          v-if="isNotes"
+        >
+          <TextareaVue 
+            v-model="notes"
+          />
+        </div>
+      </growHeightTransition>
     
 
-    <div class="new-task-form__row">
-      <button class="new-task-form__icon-button"
-        @click.prevent="isNotes = !isNotes"
-      >
-        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12.5003 5H9.00025C7.60011 5 6.89953 5 6.36475 5.27249C5.89434 5.51216 5.51216 5.89434 5.27249 6.36475C5 6.89953 5 7.60011 5 9.00025V21.0002C5 22.4004 5 23.1001 5.27249 23.6349C5.51216 24.1052 5.89434 24.4881 6.36475 24.7277C6.899 25 7.59874 25 8.99614 25H21.0039C22.4013 25 23.1 25 23.6343 24.7277C24.1046 24.4881 24.4881 24.1049 24.7277 23.6345C25 23.1003 25 22.4013 25 21.0039V17.5M20 6.25L12.5 13.75V17.5H16.25L23.75 10M20 6.25L23.75 2.5L27.5 6.25L23.75 10M20 6.25L23.75 10" stroke="#3B61E8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
+      <div class="new-task-form__row">
+        <button class="new-task-form__icon-button"
+          @click.prevent="isNotes = !isNotes"
+        >
+          <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12.5003 5H9.00025C7.60011 5 6.89953 5 6.36475 5.27249C5.89434 5.51216 5.51216 5.89434 5.27249 6.36475C5 6.89953 5 7.60011 5 9.00025V21.0002C5 22.4004 5 23.1001 5.27249 23.6349C5.51216 24.1052 5.89434 24.4881 6.36475 24.7277C6.899 25 7.59874 25 8.99614 25H21.0039C22.4013 25 23.1 25 23.6343 24.7277C24.1046 24.4881 24.4881 24.1049 24.7277 23.6345C25 23.1003 25 22.4013 25 21.0039V17.5M20 6.25L12.5 13.75V17.5H16.25L23.75 10M20 6.25L23.75 2.5L27.5 6.25L23.75 10M20 6.25L23.75 10" stroke="#3B61E8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
 
-      <PrivateCheckbox
-        :class="{'private': isPrivate}"
-        v-model="isPrivate"
-      />
-      
-      <button class="new-task-form__button">Create</button>
-    </div>
-  </form>
+        <PrivateCheckbox
+          :class="{'private': isPrivate}"
+          v-model="isPrivate"
+        />
+        
+        <button class="new-task-form__button">Create</button>
+      </div>
+    </form>
 </template>
 
 <style lang="scss">
@@ -222,12 +232,15 @@ watch(maxDuration, (newValue) => {
   width: size(376px);
   display: flex;
   flex-direction: column;
-  gap: size(30px);
 
   &__row {
     display: flex;
     align-items: center;
     width: 100%;
+
+    &:not(:last-child) {
+      margin-bottom: size(30px);
+    }
   }
 
   &__name-wrapper {
@@ -280,7 +293,7 @@ watch(maxDuration, (newValue) => {
 
   &__durations {
     display: flex;
-    gap: size(10px)
+    gap: size(10px);
   }
 
   &__dates {
@@ -293,6 +306,16 @@ watch(maxDuration, (newValue) => {
     align-items: center;
     justify-content: center;
     margin-right: size(18px);
+  }
+
+
+  & .active + .hours-select {
+    margin-top: size(30px);
+  }
+
+  &__notes-wrapper {
+    transition: .2s;
+    padding-bottom: size(30px);
   }
 }
 </style>

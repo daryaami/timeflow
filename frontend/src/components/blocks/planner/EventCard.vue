@@ -10,7 +10,8 @@ const startTime = ref(getStringTime(props.event.start.dateTime));
 const position = computed((() => getDecimalHours(props.event.start.dateTime) * 100 / 24));
 
 const height = computed(() => {
-  return duration.value * 100 / 24
+  const durationCalc = Math.max(duration.value, .25)
+  return durationCalc * 100 / 24
 })
 
 const time = computed(() => `${startTime.value} - ${getStringTime(props.event.end.dateTime)}`);
@@ -133,11 +134,8 @@ const grid = computed(() => {
 }
 
 .one-string {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  line-clamp: 1;
+  white-space: nowrap;
+  width: 100%;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 </style>

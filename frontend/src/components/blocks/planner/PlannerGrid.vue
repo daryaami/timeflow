@@ -12,11 +12,24 @@ const gridHeight = ref();
 // Current time line 
 
 const timeLineEl = ref(null);
+const todayLine = ref(null)
 
 const nowTimeLine = ref({
   caption: '',
   styleTop: '',
 })
+
+const updateTodayLine = () => {
+  const todayDate = document.querySelector('.planner-date.current');
+
+  if (!todayDate) return
+
+  const position = (todayDate.getBoundingClientRect().left - timeLineEl.value.getBoundingClientRect().left) / timeLineEl.value.offsetWidth * 100
+  const width = (todayDate.offsetWidth * .9) / timeLineEl.value.offsetWidth * 100
+
+  todayLine.value.style.left = `${position}%`;
+  todayLine.value.style.width = `${width}%`;
+}
 
 const updateTimeLine = () => {
   const now = new Date();
@@ -30,6 +43,7 @@ const setTimeLineUpdate =  async () => {
 
   await nextTick();
 
+  updateTodayLine();
   timeLineEl.value.scrollIntoView({ block: "center" });
 
   const now = new Date();
@@ -171,6 +185,9 @@ onMounted(async () => {
       ref="timeLineEl"
     >
       <div class="planner__line-time">{{ nowTimeLine.caption }}</div>
+      <div class="planner__line-today-line"
+        ref="todayLine" 
+      ></div>
     </div>
   </div>  
 </template>
@@ -214,6 +231,28 @@ onMounted(async () => {
       transform: translate(-100%, -100%);
       color: $light-grey;
       background: $white;
+    }
+
+    &__line-today-line {
+      position: absolute;
+      display: block;
+      width: 100px;
+      left: 50px;
+      bottom: 0;
+      height: size(2px);
+      background-color: #E50F0F;
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: size(12px);
+        height: size(12px);
+        background-color: #E50F0F;
+        border-radius: 50%;
+      }
     }
 }
 </style>

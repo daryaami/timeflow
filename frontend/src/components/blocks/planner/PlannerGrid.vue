@@ -2,6 +2,7 @@
 import { ref, nextTick, onMounted } from 'vue';
 import EventCardVue from './EventCard.vue';
 import { getStringTime, getDecimalHours } from '@/components/js/time-utils';
+import { lines } from '@/components/js/data/lines';
 
 const props = defineProps(['currentWeekEvents'])
 
@@ -12,11 +13,24 @@ const gridHeight = ref();
 // Current time line 
 
 const timeLineEl = ref(null);
+const todayLine = ref(null)
 
 const nowTimeLine = ref({
   caption: '',
   styleTop: '',
 })
+
+const updateTodayLine = () => {
+  const todayDate = document.querySelector('.planner-date.current');
+
+  if (!todayDate) return
+
+  const position = (todayDate.getBoundingClientRect().left - timeLineEl.value.getBoundingClientRect().left) / timeLineEl.value.offsetWidth * 100
+  const width = (todayDate.offsetWidth * .9) / timeLineEl.value.offsetWidth * 100
+
+  todayLine.value.style.left = `${position}%`;
+  todayLine.value.style.width = `${width}%`;
+}
 
 const updateTimeLine = () => {
   const now = new Date();
@@ -30,6 +44,7 @@ const setTimeLineUpdate =  async () => {
 
   await nextTick();
 
+  updateTodayLine();
   timeLineEl.value.scrollIntoView({ block: "center" });
 
   const now = new Date();
@@ -40,101 +55,6 @@ const setTimeLineUpdate =  async () => {
     setInterval(updateTimeLine, 60000);
   }, nextMinute)
 }
-
-const lines = [
-  {
-    time: '01:00',
-    percent: 100 / 24,
-  },
-  {
-    time: '02:00',
-    percent: 200 / 24,
-  },
-  {
-    time: '03:00',
-    percent: 300 / 24,
-  },
-  {
-    time: '04:00',
-    percent: 400 / 24,
-  },
-  {
-    time: '05:00',
-    percent: 500 / 24,
-  },
-  {
-    time: '06:00',
-    percent: 600 / 24,
-  },
-  {
-    time: '07:00',
-    percent: 700 / 24,
-  },
-  {
-    time: '08:00',
-    percent: 800 / 24,
-  },
-  {
-    time: '09:00',
-    percent: 900 / 24,
-  },
-  {
-    time: '10:00',
-    percent: 1000 / 24,
-  },
-  {
-    time: '11:00',
-    percent: 1100 / 24,
-  },
-  {
-    time: '12:00',
-    percent: 1200 / 24,
-  },
-  {
-    time: '13:00',
-    percent: 1300 / 24,
-  },
-  {
-    time: '14:00',
-    percent: 1400 / 24,
-  },
-  {
-    time: '15:00',
-    percent: 1500 / 24,
-  },
-  {
-    time: '16:00',
-    percent: 1600 / 24,
-  },
-  {
-    time: '17:00',
-    percent: 1700 / 24,
-  },
-  {
-    time: '18:00',
-    percent: 1800 / 24,
-  },
-  {
-    time: '19:00',
-    percent: 1900 / 24,
-  },
-  {
-    time: '20:00',
-    percent: 2000 / 24,
-  },
-  {
-    time: '21:00',
-    percent: 2100 / 24,
-  },
-  {
-    time: '22:00',
-    percent: 2200 / 24,
-  },
-  {
-    time: '23:00',
-    percent: 2300 / 24,
-  },
-]
 
 onMounted(async () => {
   await nextTick();
@@ -171,6 +91,9 @@ onMounted(async () => {
       ref="timeLineEl"
     >
       <div class="planner__line-time">{{ nowTimeLine.caption }}</div>
+      <div class="planner__line-today-line"
+        ref="todayLine" 
+      ></div>
     </div>
   </div>  
 </template>
@@ -214,6 +137,28 @@ onMounted(async () => {
       transform: translate(-100%, -100%);
       color: $light-grey;
       background: $white;
+    }
+
+    &__line-today-line {
+      position: absolute;
+      display: block;
+      width: 100px;
+      left: 50px;
+      bottom: 0;
+      height: size(2px);
+      background-color: #E50F0F;
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: size(12px);
+        height: size(12px);
+        background-color: #E50F0F;
+        border-radius: 50%;
+      }
     }
 }
 </style>

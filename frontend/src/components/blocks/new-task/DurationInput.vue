@@ -113,11 +113,11 @@ onMounted(() => forceUpdate.value += 1)
 .duration-input {
   &__buttons {
     position: absolute;
-    right: size(16px);
+    right: size(8px);
     top: 50%;
     transform: translateY(-50%);
     display: flex;
-    gap: size(20px);
+    gap: size(4px);
   }
 
   &__button {

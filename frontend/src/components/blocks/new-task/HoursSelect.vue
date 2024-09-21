@@ -54,6 +54,7 @@ onMounted(async () => {
 <style lang="scss">
 .hours-select {
   cursor: pointer;
+  margin-bottom: size(30px);
 
   &__arrow {
     @include chevron-down;

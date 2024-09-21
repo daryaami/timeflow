@@ -30,12 +30,14 @@ const openButtonHandler = () => {
 <template>
   <div class="new-task">
     <button class="new-task__button" @click="openButtonHandler">+ New Task</button>
-    <div class="new-task__popup" v-if="isPopupOpened">
-      <button class="new-task__close-button icon-button" @click="closePopup"></button>
-      <new-task-form
-        @successSubmit="isPopupOpened = false"
-      />
-    </div>
+    <Transition name="dropdown">
+      <div class="new-task__popup" v-if="isPopupOpened">
+        <button class="new-task__close-button icon-button" @click="closePopup"></button>
+          <new-task-form
+              @successSubmit="isPopupOpened = false"
+            />
+      </div>
+    </Transition>
   </div>
 </template>
 

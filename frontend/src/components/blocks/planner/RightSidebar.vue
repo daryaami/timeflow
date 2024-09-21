@@ -30,13 +30,13 @@ watch(activeTab, () => {
     }"
   >
     <div class="right-sidebar__tabs">
-      <button
+      <!-- <button
         ref="habitsButton"
         class="right-sidebar__tab"
         @click="activeTab = habitsButton"
       >
         <span>Habits</span>
-      </button>
+      </button> -->
       <button
         ref="tasksButton"
         class="right-sidebar__tab"

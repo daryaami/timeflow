@@ -1,31 +1,16 @@
 <script setup>
 import { defineProps, computed } from 'vue';
 
-const props = defineProps(['date']);
-
-const [year, month, day] = props.date.split('-').map(Number);
-const date = new Date(year, month - 1, day);
-
-const weekday = computed(() => {
-  return date.toLocaleDateString('en-EN', { weekday: 'short' });
-})
-
-const isToday = computed(() => {
-  if (new Date().getDate() === date.getDate()) {
-    return true
-  } else {
-    return false
-  }
-})
+const props = defineProps(['day']);
 </script>
 
 <template>
   <div class="planner-date"
-    :class="{'current': isToday}"
+    :class="{'current': day.isToday}"
   > 
-    <span class="planner-date__weekday">{{ weekday }}</span>
+    <span class="planner-date__weekday">{{ day.weekday }}</span>
     <div class="planner-date__day">
-        <span>{{ day }}</span>
+        <span>{{ day.date }}</span>
     </div>
   </div>
 </template>

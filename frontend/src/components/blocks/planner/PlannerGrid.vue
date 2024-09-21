@@ -4,7 +4,7 @@ import EventCardVue from './EventCard.vue';
 import { getStringTime, getDecimalHours } from '@/components/js/time-utils';
 import { lines } from '@/components/js/data/lines';
 
-const props = defineProps(['currentWeekEvents'])
+const props = defineProps(['days'])
 
 // Grid Height
 const grid = ref(null)
@@ -21,6 +21,7 @@ const nowTimeLine = ref({
 })
 
 const updateTodayLine = () => {
+  todayLine.value.style.display = 'none';
   const todayDate = document.querySelector('.planner-date.current');
 
   if (!todayDate) return
@@ -30,6 +31,7 @@ const updateTodayLine = () => {
 
   todayLine.value.style.left = `${position}%`;
   todayLine.value.style.width = `${width}%`;
+  todayLine.value.style.display = 'block';
 }
 
 const updateTimeLine = () => {
@@ -68,7 +70,7 @@ onMounted(async () => {
     ref="grid"
   >
     <div class="planner__day-column"
-      v-for="day in currentWeekEvents"
+      v-for="day in days"
       :key="day.date"  
     >
       <EventCardVue 

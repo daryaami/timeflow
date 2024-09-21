@@ -1,7 +1,7 @@
 <script setup>
-import { ref, onMounted, nextTick, computed, watch } from 'vue';
-import { getPrevWeekEvents, getNextWeekEvents } from '@/components/js/data/events';
+import { ref, onMounted, nextTick, computed, watch, defineAsyncComponent } from 'vue';
 import { userData } from '@/components/js/data/userData';
+import { getStringDate, isSameDay } from '@/components/js/time-utils';
 
 import PlannerGrid from '@/components/blocks/planner/PlannerGrid.vue';
 
@@ -14,15 +14,42 @@ import PlannerDateVue from '../components/blocks/planner/PlannerDate.vue';
 import RightSidebarVue from '@/components/blocks/planner/RightSidebar.vue';
 
 const isSidebarOpened = ref(true);
-const currentWeekEvents = ref(null)
+const days = ref([])
 
 // Get events
 
 const isLoading = ref(true);
 
+const createDays = (date, events) => {
+  const currentDay = date.getDay(); 
+  const monday = new Date(date.setDate(date.getDate() - currentDay + 1));
+  days.value = [];
+
+  for (let i = 0; i < 7; i++) {
+    const day = new Date(monday);
+    day.setDate(monday.getDate() + i); 
+    days.value.push({
+      weekday: day.toLocaleDateString('en-EN', { weekday: 'short' }),
+      date: day.getDate(),
+      isToday: isSameDay(day, new Date()),
+      day: day,
+      events: [],
+    });
+  }
+
+  days.value.forEach(day => {
+    const filteredEvents = events.filter(event => isSameDay(day.day, new Date(event.start.dateTime)) || isSameDay(day.day, new Date(event.end.dateTime)))
+
+    day.events = filteredEvents;
+  })
+
+  console.log(days.value)
+}
+
 const fetchData = async () => {
   try {
-    currentWeekEvents.value = await getEvents();
+    const events = await getEvents();
+    createDays(new Date(), events)
   } catch (error) {
     console.error('ошибка', error);
   } finally {
@@ -34,31 +61,45 @@ const nextWeekHandler = async () => {
   if (isLoading.value) return
   isLoading.value = true;
   
-  const newEvents = await getNextWeekEvents(currentWeekEvents.value.mon.date);
+  const date = days.value[0].day;
+  const nextMonday = new Date(date.setDate(date.getDate() + 7));
 
-  currentWeekEvents.value = newEvents;
-  isLoading.value = false;
-  await nextTick();
-  timeLineEl.value.scrollIntoView({ block: "center" });
+  try {
+    const events = await getEvents(getStringDate(nextMonday));
+    createDays(nextMonday, events)
+  } catch (error) {
+    console.error('ошибка', error);
+  } finally {
+    isLoading.value = false;
+    await nextTick();
+    timeLineEl.value.scrollIntoView({ block: "center" });
+  }
 }
 
 const prevWeekHandler = async () => {
   if (isLoading.value) return
   isLoading.value = true;
   
-  const newEvents = await getPrevWeekEvents(currentWeekEvents.value.mon.date);
+  const date = days.value[0].day;
+  const nextMonday = new Date(date.setDate(date.getDate() - 7));
 
-  currentWeekEvents.value = newEvents;
-  isLoading.value = false;
-  await nextTick();
-  timeLineEl.value.scrollIntoView({ block: "center" });
+  try {
+    const events = await getEvents(getStringDate(nextMonday));
+    createDays(nextMonday, events)
+  } catch (error) {
+    console.error('ошибка', error);
+  } finally {
+    isLoading.value = false;
+    await nextTick();
+    timeLineEl.value.scrollIntoView({ block: "center" });
+  }
 }
 
 // Current Month
 
 const currentMonth = computed(() => {
-  if (currentWeekEvents.value) {
-    const now = new Date(currentWeekEvents.value.mon.date);
+  if (days.value.length) {
+    const now = days.value[0].day;
     return `${now.toLocaleString('default', { month: 'long' })} ${now.getFullYear()}`;
   } else {
     return ''
@@ -85,14 +126,14 @@ onMounted(() => {
       <div class="planner__grid-wrapper" v-if="!isLoading">
         <div class="planner__days-header">
           <PlannerDateVue 
-            v-for="day in currentWeekEvents"
+            v-for="day in days"
             :key="day.date" 
-            :date="day.date"
+            :day="day"
           />
         </div>
         
         <PlannerGrid
-          :currentWeekEvents="currentWeekEvents"
+          :days="days"
         />
       </div>
       

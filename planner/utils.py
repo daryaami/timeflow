@@ -21,26 +21,26 @@ def translate_event_to_user_tz(event, user):
             event_start_loc = datetime.fromisoformat(event_start).astimezone(tz)
             event_end_loc = datetime.fromisoformat(event_end).astimezone(tz)
 
-            if event_end_loc.date() != event_start_loc.date():
-                duplicate = copy.deepcopy(event)
+            # if event_end_loc.date() != event_start_loc.date():
+            #     duplicate = copy.deepcopy(event)
                 
-                duplicate_start = event_end_loc.replace(hour=0, minute=0, second=0)
-                duplicate['start']['dateTime'] = duplicate_start.isoformat()
-                duplicate['end']['dateTime'] = event_end_loc.isoformat()
+            #     duplicate_start = event_end_loc.replace(hour=0, minute=0, second=0)
+            #     duplicate['start']['dateTime'] = duplicate_start.isoformat()
+            #     duplicate['end']['dateTime'] = event_end_loc.isoformat()
 
-                event['start']['dateTime'] = event_start_loc.isoformat()
-                new_event_end = event_start_loc.replace(hour=23, minute=59, second=59, microsecond=999999)
-                event['end']['dateTime'] = new_event_end.isoformat()
+            #     event['start']['dateTime'] = event_start_loc.isoformat()
+            #     new_event_end = event_start_loc.replace(hour=23, minute=59, second=59, microsecond=999999)
+            #     event['end']['dateTime'] = new_event_end.isoformat()
 
-                event['summary'] += " (1/2)"
-                duplicate['summary'] += " (2/2)"
-                # можно добавить какие-то свойства в словарь дубликата для его определения в дальнешем
-                return [event, duplicate]
+            #     event['summary'] += " (1/2)"
+            #     duplicate['summary'] += " (2/2)"
+            #     # можно добавить какие-то свойства в словарь дубликата для его определения в дальнешем
+            #     return [event, duplicate]
 
             event['start']['dateTime'] = event_start_loc.isoformat()
             event['end']['dateTime'] = event_end_loc.isoformat()
         
-        return [event]
+        return event
         
     except Exception as e:
         raise ValueError(f'Error translating event timezone: {e}')
@@ -125,23 +125,25 @@ def get_all_events_by_weekday(user, credentials, date_param=None):
 
     start_of_week = calendar_date - timedelta(days=calendar_date.weekday())
 
-    days_of_week = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
-    events_by_weekday = {day: {"date": (start_of_week + timedelta(days=i)).strftime('%Y-%m-%d'), "events": []} for i, day in enumerate(days_of_week)}
+    # days_of_week = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+    # events_by_weekday = {day: {"date": (start_of_week + timedelta(days=i)).strftime('%Y-%m-%d'), "events": []} for i, day in enumerate(days_of_week)}
 
     all_events = get_all_user_events(user=user, credentials=credentials, start_date=start_of_week, time_interval=timedelta(days=7))
 
+    event_list = []
+
     for event in all_events:
-        trans_events = translate_event_to_user_tz(event, user)
+        event_list.append(translate_event_to_user_tz(event, user))
 
-        for trans_event in trans_events:
-            event_start = trans_event['start'].get('dateTime', trans_event['start'].get('date'))
-            event_date = datetime.fromisoformat(event_start).date() if 'dateTime' in trans_event['start'] else datetime.strptime(event_start, '%Y-%m-%d').date()
+        # for trans_event in trans_events:
+        #     event_start = trans_event['start'].get('dateTime', trans_event['start'].get('date'))
+        #     event_date = datetime.fromisoformat(event_start).date() if 'dateTime' in trans_event['start'] else datetime.strptime(event_start, '%Y-%m-%d').date()
 
-            weekday = event_date.weekday()
-            day_key = days_of_week[weekday]
-            events_by_weekday[day_key]["events"].append(trans_event)
+        #     weekday = event_date.weekday()
+        #     day_key = days_of_week[weekday]
+        #     events_by_weekday[day_key]["events"].append(trans_event)
 
-    return {"days": events_by_weekday}
+    return {"events": event_list}
 
 
 def create_event(user, credentials, calendar_id, **event_details):

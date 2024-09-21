@@ -169,7 +169,7 @@ class UserCalendar(models.Model):
     foreground_color = models.CharField(max_length=8, null=True)
 
     def get_info_json(self):
-        info = {"calendar_id": self.calendar_id, "summary": self.summary}
+        info = {"calendar_id": self.calendar_id, "summary": self.summary, "color": self.background_color, "primary": self.primary}
         return info
 
     class Meta:

@@ -10,7 +10,7 @@ from django.http import JsonResponse
 from users.models import GoogleCredentials, UserCalendar, CustomUser, Hours
 from tasks.models import Task
 from tasks.utils import get_user_tasks_json
-from .utils import get_user_hours_json
+from .utils import get_user_hours_json, get_user_calendars_json
 
 
 def get_user_info(request):
@@ -18,7 +18,8 @@ def get_user_info(request):
     user_info = {
         "profile": user.get_profile_json(),
         "hours": get_user_hours_json(user=user),
-        "tasks": get_user_tasks_json(user=user)
+        "tasks": get_user_tasks_json(user=user),
+        "calendars": get_user_calendars_json(user=user)
     }
     return JsonResponse(user_info)
 

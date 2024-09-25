@@ -33,15 +33,12 @@ const createDays = (date, events) => {
       isToday: isSameDay(day, new Date()),
 
       day: day,
-      events: [],
+      events: events.filter(event => 
+        isSameDay(day, new Date(event.start.dateTime)) || 
+        isSameDay(day, new Date(event.end.dateTime))
+      ),
     });
   }
-
-  days.value.forEach(day => {
-    const filteredEvents = events.filter(event => isSameDay(day.day, new Date(event.start.dateTime)) || isSameDay(day.day, new Date(event.end.dateTime)))
-
-    day.events = filteredEvents;
-  })
 }
 
 const fetchData = async (date = new Date()) => {
@@ -91,15 +88,14 @@ onMounted(() => {
 
 watch(updatedEvents, (newEvents) => {
   newEvents.forEach(event => {
-    const dayArr = days.value.filter(day => isSameDay(day.day, new Date(event.start.dateTime)) || isSameDay(day.day, new Date(event.end.dateTime)))
-    if (dayArr.length) {
-      dayArr[0].events.push(event);
-    } else {
-      return
+    const dayToUpdate = days.value.find(day => 
+      isSameDay(day.day, new Date(event.start.dateTime)) || 
+      isSameDay(day.day, new Date(event.end.dateTime))
+    )
+    if (dayToUpdate) {
+      dayToUpdate.events.push(event);
     }
   })
-
-  days.value = days.value;
 })
 </script>
 

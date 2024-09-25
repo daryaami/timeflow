@@ -1,7 +1,9 @@
+import { ref } from 'vue';
 import { getCurrentWeekMonday, getStringDate, isSameDay } from '../time-utils';
 
 let events = [];
 const loadedMondays = [];
+const updatedEvents = ref([])
 
 const getEvents = async (date = new Date()) => {
   if (loadedMondays.filter(item => isSameDay(date, item)).length) {
@@ -11,7 +13,15 @@ const getEvents = async (date = new Date()) => {
   let response = await fetch(`${window.location.origin}/planner_api/get_events?date=${getStringDate(date)}`);
   if (response.ok) {
     const data = await response.json();
-    events = [...events, ...data.events];
+    events = [...events, ...data.events].reduce((acc, current) => {
+      const x = acc.find(item => item.id === current.id);
+      if (!x) {
+        acc.push(current);
+      }
+      return acc;
+    }, [])
+
+
 
     let loadedDay;
     date === ''?  loadedDay = new Date(): loadedDay = new Date(date);
@@ -24,23 +34,9 @@ const getEvents = async (date = new Date()) => {
 }
 
 const updateEvents = (newEvents) => {
-  // TODO
-  // Переделать
-
-  const updatedEvents = { ...events.value }; 
-
-  newEvents.forEach(event => {
-    const eventDate = getStringDate(event.start.dateTime);
-    
-    for (const day in updatedEvents) {
-      if (updatedEvents[day].date === eventDate) {
-        updatedEvents[day].events.push(event)
-      }
-    }
-  });
-
-  events.value = updatedEvents;
+  events = [...events, ...newEvents];
+  updatedEvents.value = newEvents;
 }
 
 
-export { events, updateEvents, getEvents}
+export { updateEvents, updatedEvents, getEvents}

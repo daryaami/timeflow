@@ -14,7 +14,6 @@ import { getCookie } from "@/components/js/getCookie";
 import { convertMinToTimeString } from "@/components/js/time-utils";
 import { updateEvents } from "@/components/js/data/events";
 
-
 const emit = defineEmits(['successSubmit']);
 const isNotes = ref(false);
 const isMinDurationrValid = ref(true);

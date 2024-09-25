@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, nextTick, computed, watch, defineAsyncComponent } from 'vue';
+import { ref, onMounted, nextTick, computed, watch } from 'vue';
 import { userData } from '@/components/js/data/userData';
 import { isSameDay } from '@/components/js/time-utils';
 import { getCurrentWeekMonday } from '@/components/js/time-utils';
@@ -9,7 +9,7 @@ import PlannerGrid from '@/components/blocks/planner/PlannerGrid.vue';
 import PlannerHeaderVue from '../components/blocks/planner/PlannerHeader.vue';
 import LoaderVue from '../components/blocks/Loader.vue';
 
-import { getEvents } from '@/components/js/data/events';
+import { getEvents, updatedEvents } from '@/components/js/data/events';
 
 import PlannerDateVue from '../components/blocks/planner/PlannerDate.vue';
 import RightSidebarVue from '@/components/blocks/planner/RightSidebar.vue';
@@ -87,6 +87,19 @@ const currentMonth = computed(() => {
 
 onMounted(() => {
   fetchData();
+})
+
+watch(updatedEvents, (newEvents) => {
+  newEvents.forEach(event => {
+    const dayArr = days.value.filter(day => isSameDay(day.day, new Date(event.start.dateTime)) || isSameDay(day.day, new Date(event.end.dateTime)))
+    if (dayArr.length) {
+      dayArr[0].events.push(event);
+    } else {
+      return
+    }
+  })
+
+  days.value = days.value;
 })
 </script>
 

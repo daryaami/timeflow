@@ -1,7 +1,8 @@
 <script setup>
 import { ref, onMounted, nextTick, computed, watch, defineAsyncComponent } from 'vue';
 import { userData } from '@/components/js/data/userData';
-import { getStringDate, isSameDay } from '@/components/js/time-utils';
+import { isSameDay } from '@/components/js/time-utils';
+import { getCurrentWeekMonday } from '@/components/js/time-utils';
 
 import PlannerGrid from '@/components/blocks/planner/PlannerGrid.vue';
 
@@ -21,10 +22,8 @@ const days = ref([])
 const isLoading = ref(true);
 
 const createDays = (date, events) => {
-  const currentDay = date.getDay(); 
-  const monday = new Date(date.setDate(date.getDate() - currentDay + 1));
+  const monday = getCurrentWeekMonday(date)
   days.value = [];
-
   for (let i = 0; i < 7; i++) {
     const day = new Date(monday);
     day.setDate(monday.getDate() + i); 
@@ -32,6 +31,7 @@ const createDays = (date, events) => {
       weekday: day.toLocaleDateString('en-EN', { weekday: 'short' }),
       date: day.getDate(),
       isToday: isSameDay(day, new Date()),
+
       day: day,
       events: [],
     });
@@ -42,18 +42,17 @@ const createDays = (date, events) => {
 
     day.events = filteredEvents;
   })
-
-  console.log(days.value)
 }
 
-const fetchData = async () => {
+const fetchData = async (date = new Date()) => {
   try {
-    const events = await getEvents();
-    createDays(new Date(), events)
+    const events = await getEvents(date);
+    createDays(date, events)
   } catch (error) {
     console.error('ошибка', error);
   } finally {
     isLoading.value = false;
+    await nextTick();
   }
 }
 
@@ -64,35 +63,15 @@ const nextWeekHandler = async () => {
   const date = days.value[0].day;
   const nextMonday = new Date(date.setDate(date.getDate() + 7));
 
-  try {
-    const events = await getEvents(getStringDate(nextMonday));
-    createDays(nextMonday, events)
-  } catch (error) {
-    console.error('ошибка', error);
-  } finally {
-    isLoading.value = false;
-    await nextTick();
-    timeLineEl.value.scrollIntoView({ block: "center" });
-  }
+  fetchData(nextMonday);
 }
 
 const prevWeekHandler = async () => {
   if (isLoading.value) return
   isLoading.value = true;
-  
   const date = days.value[0].day;
-  const nextMonday = new Date(date.setDate(date.getDate() - 7));
-
-  try {
-    const events = await getEvents(getStringDate(nextMonday));
-    createDays(nextMonday, events)
-  } catch (error) {
-    console.error('ошибка', error);
-  } finally {
-    isLoading.value = false;
-    await nextTick();
-    timeLineEl.value.scrollIntoView({ block: "center" });
-  }
+  const prevMonday = new Date(date.setDate(date.getDate() - 7));
+  fetchData(prevMonday)
 }
 
 // Current Month

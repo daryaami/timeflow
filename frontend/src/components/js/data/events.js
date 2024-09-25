@@ -1,26 +1,22 @@
-import { ref } from 'vue';
-import { getStringDate } from '../time-utils';
+import { getCurrentWeekMonday, getStringDate, isSameDay } from '../time-utils';
 
-const events = ref([]);
+let events = [];
 const loadedMondays = [];
 
-const getEvents = async (date = '') => {
-  // date в формате '2024-06-24'
+const getEvents = async (date = new Date()) => {
+  if (loadedMondays.filter(item => isSameDay(date, item)).length) {
+    return events;
+  }
 
-  // TODO
-  // Вычислить понедельник
-  // Если понедельник загружен, вернуть события 
-
-  let response = await fetch(`${window.location.origin}/planner_api/get_events${date? '?date=' + date: ''}`);
+  let response = await fetch(`${window.location.origin}/planner_api/get_events?date=${getStringDate(date)}`);
   if (response.ok) {
     const data = await response.json();
-    events.value.push(data.events);
+    events = [...events, ...data.events];
 
     let loadedDay;
     date === ''?  loadedDay = new Date(): loadedDay = new Date(date);
-    const loadedMonday = new Date(loadedDay.setDate(loadedDay.getDate() - loadedDay.getDay() + 1));
-    loadedMondays.push(getStringDate(loadedMonday))
-    console.log(loadedMondays)
+    const loadedMonday = getCurrentWeekMonday(loadedDay);
+    loadedMondays.push(loadedMonday);
     return data.events;
   } else {
     throw new Error('Failed to fetch events');

@@ -71,6 +71,10 @@ const isSameDay = (date1, date2) => {
          date1.getFullYear() === date2.getFullYear();
 }
 
+const getCurrentWeekMonday = (date) => {
+  const currentDay = date.getDay(); 
+  return new Date(date.setDate(date.getDate() - currentDay + 1));
+}
 
 
-export { getDecimalHours, getHours, getMinutes, getStringTime, getTomorrow, convertMinToTimeString, getStringDate, isSameDay }
+export { getDecimalHours, getHours, getMinutes, getStringTime, getTomorrow, convertMinToTimeString, getStringDate, isSameDay, getCurrentWeekMonday }

@@ -1,11 +1,14 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref, nextTick, watch } from 'vue';
 import { getDecimalHours, getStringTime } from '@/components/js/time-utils';
 
 const props = defineProps(['event', 'gridHeight']);
 
 const duration = ref(getDecimalHours(props.event.end.dateTime) - getDecimalHours(props.event.start.dateTime))
 const startTime = ref(getStringTime(props.event.start.dateTime));
+
+const card = ref()
+
 
 const position = computed((() => getDecimalHours(props.event.start.dateTime) * 100 / 24));
 
@@ -23,6 +26,9 @@ const isPast = computed(() => {
   }
 })
 
+
+
+
 // Grid
 const grid = computed(() => {
   if (props.gridHeight) {
@@ -31,12 +37,17 @@ const grid = computed(() => {
     return [0, 0]
   }
 })
+
+const widthParametr = computed(() => {
+  return props.event.overlapLevel? props.event.overlapLevel + 1: 1 
+})
 </script>
 
 <template>
   <vue-draggable-resizable 
-    class="event-card"
     v-if="gridHeight"
+
+    class="event-card"
     :axis="'y'"
     :grid="grid"
     :handles="['tm', 'bm']"
@@ -46,12 +57,16 @@ const grid = computed(() => {
       height: `calc(${height}% - 2px)`,
       backgroundColor: `${event.background_color}`,
       color: `${event.foreground_color}`,
+      width: `calc(100% - ${widthParametr * .75}rem)`
     }'
+
+    ref="card"
     
     :class="{
       'no-padding': duration <= .25,
       'no-right-padding': duration <= .5,
       'past': isPast,
+      'overlap': event.overlapLevel,
     }"
   >
     <div v-if="duration <= 0.5"
@@ -84,15 +99,18 @@ const grid = computed(() => {
   color: $white;
   border-radius: size(10px);
   height: size(90px);
-  width: calc(100% - size(15px))!important;
   position: absolute;
-  left: 0;
+  right: .75rem;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: start;
   border: none;
   cursor: pointer;
+  
+  &.overlap {
+    outline: 1px solid $white;
+  }
 
   &.no-padding {
     padding-top: 0;

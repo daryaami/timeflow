@@ -21,22 +21,48 @@ const days = ref([])
 
 const isLoading = ref(true);
 
+const createOverlappingEvents = (events) => {
+  const sortedEvents = events.sort((a, b) => new Date(a.start.dateTime) - new Date(b.start.dateTime))
+
+  for(let i = 1; i < sortedEvents.length; i++) {
+    const currentEvent = sortedEvents[i];
+    const currentEventStartDate = new Date(currentEvent.start.dateTime);
+
+    // console.log(currentEventDate);
+
+    for(let j = i - 1; j >= 0; j--) {
+      const compEvent = sortedEvents[j]
+      if (currentEventStartDate > new Date(compEvent.start.dateTime) && currentEventStartDate < new Date(compEvent.end.dateTime)) {
+        compEvent.overlapLevel? 
+          currentEvent.overlapLevel = compEvent.overlapLevel + 1:
+          currentEvent.overlapLevel = 1;
+        
+        break;
+      }
+    }
+  }
+  
+  return sortedEvents
+}
+
 const createDays = (date, events) => {
   const monday = getCurrentWeekMonday(date)
   days.value = [];
   for (let i = 0; i < 7; i++) {
     const day = new Date(monday);
     day.setDate(monday.getDate() + i); 
+
+    const filteredEvents = events.filter(event => 
+      isSameDay(day, new Date(event.start.dateTime)) || 
+      isSameDay(day, new Date(event.end.dateTime))
+    )
+
     days.value.push({
       weekday: day.toLocaleDateString('en-EN', { weekday: 'short' }),
       date: day.getDate(),
       isToday: isSameDay(day, new Date()),
-
       day: day,
-      events: events.filter(event => 
-        isSameDay(day, new Date(event.start.dateTime)) || 
-        isSameDay(day, new Date(event.end.dateTime))
-      ),
+      events: createOverlappingEvents(filteredEvents),
     });
   }
 }

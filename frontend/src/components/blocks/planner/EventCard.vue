@@ -69,7 +69,7 @@ const widthParametr = computed(() => {
       'overlap': event.overlapLevel,
     }"
   >
-    <div v-if="duration <= 0.5"
+    <div v-if="duration < 0.75"
       class="event-card__short-wrapper"
     >
       <span class="event-card__name">{{ event.summary }},&nbsp;</span>
@@ -77,7 +77,7 @@ const widthParametr = computed(() => {
     </div>
     <div class="event-card__name-wrapper">
       <span class="event-card__name"
-        v-if="duration > 0.5"
+        v-if="duration >= 0.75"
         :class="{
           'one-string': duration <= 1,
         }"
@@ -85,7 +85,7 @@ const widthParametr = computed(() => {
     </div>
       
     <span class="event-card__time"
-      v-if="duration > 0.5"
+      v-if="duration >= 0.75"
     >{{ time }}</span>
   </vue-draggable-resizable>
 </template>

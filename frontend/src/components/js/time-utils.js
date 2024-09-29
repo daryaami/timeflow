@@ -72,9 +72,13 @@ const isSameDay = (date1, date2) => {
 }
 
 const getCurrentWeekMonday = (date) => {
-  const currentDay = date.getDay(); 
-  return new Date(date.setDate(date.getDate() - currentDay + 1));
-}
+  const newDate = new Date(date);
+  let currentDay = newDate.getDay();
+  if (currentDay === 0) { 
+    currentDay = 7;
+  }
+  return new Date(newDate.setDate(newDate.getDate() - currentDay + 1));
+};
 
 
 export { getDecimalHours, getHours, getMinutes, getStringTime, getTomorrow, convertMinToTimeString, getStringDate, isSameDay, getCurrentWeekMonday }

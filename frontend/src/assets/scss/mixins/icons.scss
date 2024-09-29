@@ -57,3 +57,8 @@
   background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M17.7397 2.26031C17.3927 1.91323 16.8299 1.91323 16.4828 2.26031L9.99999 8.74315L3.51718 2.26031C3.17011 1.91323 2.60738 1.91323 2.26031 2.26031C1.91323 2.60738 1.91323 3.17011 2.26031 3.51718L8.74313 10L2.26033 16.4828C1.91325 16.8299 1.91325 17.3926 2.26033 17.7397C2.6074 18.0868 3.17013 18.0868 3.5172 17.7397L9.99999 11.2569L16.4828 17.7397C16.8299 18.0868 17.3927 18.0868 17.7397 17.7397C18.0868 17.3926 18.0868 16.8299 17.7397 16.4828L11.2569 10L17.7397 3.51718C18.0868 3.17011 18.0868 2.60738 17.7397 2.26031Z' fill='%235D6170'/%3E%3C/svg%3E%0A");
   background-repeat: no-repeat;
 }
+
+@mixin check-icon {
+  background-image: url("data:image/svg+xml,%3Csvg width='30' height='30' viewBox='0 0 30 30' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7.5 14.9999L12.8033 20.3031L23.4087 9.69653' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' /%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+}

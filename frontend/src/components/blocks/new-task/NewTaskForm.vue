@@ -7,6 +7,7 @@ import DateInputVue from "./DateInput.vue";
 import TextareaVue from "../form/Textarea.vue";
 import PrivateCheckbox from "./PrivateCheckbox.vue";
 import growHeightTransition from "@/components/transitions/growHeightTransition.vue";
+import ButtonLoader from "../loaders/ButtonLoader.vue";
 
 import { computed, ref, watch, defineEmits } from "vue";
 import { getTomorrow } from "@/components/js/time-utils";
@@ -14,9 +15,11 @@ import { getCookie } from "@/components/js/getCookie";
 import { convertMinToTimeString } from "@/components/js/time-utils";
 import { updateEvents } from "@/components/js/data/events";
 
-const emit = defineEmits(['successSubmit']);
+const emit = defineEmits(['loadingUpdate']);
 const isNotes = ref(false);
 const isMinDurationrValid = ref(true);
+const isLoading = ref(false);
+const isLoaded = ref(false);
 
 const name = ref();
 const priority = ref();
@@ -94,8 +97,11 @@ const getFormData = () => {
 const submitHandler = async (e) => {
   e.preventDefault();
 
+  if (isLoading.value) return
   if (!validateForm()) return
 
+  isLoading.value = true;
+  emit('loadingUpdate', isLoading.value);
   const csrftoken = getCookie('csrftoken');
   const formData = getFormData();
 
@@ -112,11 +118,13 @@ const submitHandler = async (e) => {
     }).then(data => data.json());
   } catch (error) {
     console.error('ошибка', error);
-    return
   }
 
   updateEvents(response.events);
-  emit('successSubmit');
+  isLoading.value = false;
+  isLoaded.value = true;
+  emit('loadingUpdate', isLoading.value);
+  setTimeout(() => isLoaded.value = false, 2000)
 }
 
 watch(minDuration, (newValue) => {
@@ -221,7 +229,17 @@ watch(maxDuration, (newValue) => {
           v-model="isPrivate"
         />
         
-        <button class="new-task-form__button">Create</button>
+        <button class="new-task-form__button"
+          :class="{
+            'loading': isLoading,
+            'loaded': isLoaded,
+          }"
+        >
+          <span v-if="!isLoading && !isLoaded">Create</span>
+          <button-loader 
+            v-if="isLoading"
+          />
+        </button>
       </div>
     </form>
 </template>
@@ -282,8 +300,27 @@ watch(maxDuration, (newValue) => {
     color: $white;
     background: $blue;
     margin-left: auto;
-    padding: size(11px) size(14px);
     border-radius: size(30px);
+    padding: size(10px);
+    width: size(90px);
+    height: size(41px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: .3s;
+    background-position: center;
+
+
+    &.loading {
+      background-color: #B4C9FF;
+      cursor: default;
+    }
+
+    &.loaded {
+      background-color: $green;
+      @include check-icon;
+      background-size: size(30px) size(30px);
+    }
   }
 
   &__split-check {

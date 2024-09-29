@@ -7,7 +7,7 @@ import { getCurrentWeekMonday } from '@/components/js/time-utils';
 import PlannerGrid from '@/components/blocks/planner/PlannerGrid.vue';
 
 import PlannerHeaderVue from '../components/blocks/planner/PlannerHeader.vue';
-import LoaderVue from '../components/blocks/Loader.vue';
+import LoaderVue from '../components/blocks/loaders/Loader.vue';
 
 import { getEvents, updatedEvents } from '@/components/js/data/events';
 
@@ -28,8 +28,6 @@ const createOverlappingEvents = (events) => {
     const currentEvent = sortedEvents[i];
     const currentEventStartDate = new Date(currentEvent.start.dateTime);
 
-    // console.log(currentEventDate);
-
     for(let j = i - 1; j >= 0; j--) {
       const compEvent = sortedEvents[j]
       if (currentEventStartDate > new Date(compEvent.start.dateTime) && currentEventStartDate < new Date(compEvent.end.dateTime)) {
@@ -47,6 +45,7 @@ const createOverlappingEvents = (events) => {
 
 const createDays = (date, events) => {
   const monday = getCurrentWeekMonday(date)
+
   days.value = [];
   for (let i = 0; i < 7; i++) {
     const day = new Date(monday);

@@ -52,19 +52,47 @@ const createDays = (date, events) => {
     const day = new Date(monday);
     day.setDate(monday.getDate() + i); 
 
-    const filteredEvents = events.filter(event => 
-      isSameDay(day, new Date(event.start.dateTime)) || 
-      isSameDay(day, new Date(event.end.dateTime))
-    )
+    // const filteredEvents = events.filter(event => 
+    //   isSameDay(day, new Date(event.start.dateTime))
+    // )
 
     days.value.push({
       weekday: day.toLocaleDateString('en-EN', { weekday: 'short' }),
       date: day.getDate(),
       isToday: isSameDay(day, new Date()),
       day: day,
-      events: createOverlappingEvents(filteredEvents),
+      events: [],
+      // events: createOverlappingEvents(filteredEvents),
     });
   }
+
+  // 1. Split multidays events & push into days
+  // ???Разбить events и cards в разные сущности???
+  events.forEach(event => {
+    const startDate = new Date(event.start.dateTime);
+    const endDate = new Date(event.end.dateTime);
+    if (startDate.getDate() === endDate.getDate()) {
+      const day = days.value.find(day => day.date === startDate.getDate());
+
+      day.events.push(event);
+    } else {
+      const firstDayEvent = JSON.parse(JSON.stringify(event));
+      firstDayEvent.end.dateTime = firstDayEvent.start.dateTime.replace(/T\d{2}:\d{2}:\d{2}/, "T23:59:00");
+      
+      const firstDay = days.value.find(day => day.date === startDate.getDate());
+
+      firstDay.events.push(firstDayEvent);
+
+      const secondDayEvent = JSON.parse(JSON.stringify(event));
+      secondDayEvent.start.dateTime = secondDayEvent.end.dateTime.replace(/T\d{2}:\d{2}:\d{2}/, "T00:00:00");
+      const secondDay = days.value.find(day => day.date === endDate.getDate());
+
+
+      secondDay.events.push(secondDayEvent);
+    }
+  })
+  
+  // 2. Create overlapping event in days
 }
 
 const fetchData = async (date = new Date()) => {

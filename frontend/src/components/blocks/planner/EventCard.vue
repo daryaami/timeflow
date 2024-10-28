@@ -1,10 +1,12 @@
 <script setup>
-import { computed, onMounted, ref, nextTick, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { getDecimalHours, getStringTime } from '@/components/js/time-utils';
 
 const props = defineProps(['event', 'gridHeight']);
 
-const duration = ref(getDecimalHours(props.event.end.dateTime) - getDecimalHours(props.event.start.dateTime))
+const duration = computed(() => {
+  return (new Date(props.event.end.dateTime) - new Date(props.event.start.dateTime)) / (1000 * 60 * 60)
+})
 const startTime = ref(getStringTime(props.event.start.dateTime));
 
 const card = ref()

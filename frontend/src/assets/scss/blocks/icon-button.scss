@@ -1,4 +1,5 @@
 .icon-button {
+  @include reset-button;
   border-radius: 50%;
   transition: .15s;
 

@@ -50,7 +50,6 @@ const isSidebarOpened = defineModel();
   }
 
   &__date-button {
-    @include reset-button;
     display: block;
     width: size(36px);
     height: size(36px);

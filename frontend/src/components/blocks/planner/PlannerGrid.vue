@@ -1,10 +1,11 @@
 <script setup>
-import { ref, nextTick, onMounted } from 'vue';
+import { ref, nextTick, onMounted, defineEmits } from 'vue';
 import EventCardVue from './EventCard.vue';
 import { getStringTime, getDecimalHours } from '@/components/js/time-utils';
 import { lines } from '@/components/js/data/lines';
 
-const props = defineProps(['days'])
+const props = defineProps(['days', 'selectedEvent'])
+const emit = defineEmits(['eventClick']);
 
 // Grid Height
 const grid = ref(null)
@@ -78,6 +79,10 @@ onMounted(async () => {
         :key="i"
         :event="event"
         :gridHeight="gridHeight"
+        @click=" emit('eventClick', event)"
+        :class="{
+          'selected': selectedEvent === event,
+        }"
       />
     </div>
     <div class="planner__line"
@@ -121,6 +126,7 @@ onMounted(async () => {
       width: calc(100% + size(7px));
       height: 1px;
       background-color: $light-lines;
+      pointer-events: none;
 
       &--now {
         background-color: $light-grey;

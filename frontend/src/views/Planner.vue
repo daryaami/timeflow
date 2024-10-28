@@ -8,6 +8,7 @@ import PlannerGrid from '@/components/blocks/planner/PlannerGrid.vue';
 
 import PlannerHeaderVue from '../components/blocks/planner/PlannerHeader.vue';
 import LoaderVue from '../components/blocks/loaders/Loader.vue';
+import EventInfoSidebar from '@/components/blocks/planner/EventInfoSidebar.vue';
 
 import { getEvents, updatedEvents } from '@/components/js/data/events';
 
@@ -122,6 +123,15 @@ watch(updatedEvents, (newEvents) => {
     }
   })
 })
+
+
+// SelectedEvent
+
+const selectedEvent = ref(null);
+
+const eventClickHandler = (event) => {
+  selectedEvent.value = event;
+}
 </script>
 
 <template>
@@ -147,13 +157,30 @@ watch(updatedEvents, (newEvents) => {
         
         <PlannerGrid
           :days="days"
+          :selectedEvent="selectedEvent"
+          @event-click="eventClickHandler"
         />
       </div>
       
     </div>
-    <RightSidebarVue v-if="userData"
-      :isOpened="isSidebarOpened"
-    />
+    <div class="planner__right-sidebar"
+      v-if="userData"
+
+      :class="{
+        'hidden': !isSidebarOpened,
+      }"
+    >
+      <RightSidebarVue 
+        v-if="!selectedEvent"
+      />
+
+      <EventInfoSidebar
+        v-if="selectedEvent"
+        :event="selectedEvent"
+        @close="selectedEvent = null"
+      />
+    </div>
+    
   </div>
   
   
@@ -197,6 +224,17 @@ watch(updatedEvents, (newEvents) => {
       padding-left: size(79px);
       margin-left: size(-79px);
       background-color: $white;
+    }
+
+    &__right-sidebar {
+      width: size(380px);
+      height: 100%;
+      transition: .15s;
+      overflow: hidden;
+
+      &.hidden {
+        width: size(0px);
+      }
     }
   }
 </style>

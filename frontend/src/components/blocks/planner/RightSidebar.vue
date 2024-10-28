@@ -3,7 +3,6 @@ import { onMounted, ref, watch } from 'vue';
 import { userData } from '@/components/js/data/userData';
 import TaskItemVue from './TaskItem.vue';
 
-const props = defineProps(['isOpened'])
 
 const underlineRight = ref();
 const underlineLeft = ref();
@@ -24,11 +23,7 @@ watch(activeTab, () => {
 </script>
 
 <template>
-  <div class="right-sidebar"
-    :class="{
-      'hidden': !isOpened,
-    }"
-  >
+  <div class="right-sidebar">
     <div class="right-sidebar__tabs">
       <!-- <button
         ref="habitsButton"
@@ -65,16 +60,9 @@ watch(activeTab, () => {
 
 <style lang="scss">
 .right-sidebar {
-  width: size(380px);
   height: 100%;
   display: flex;
   flex-direction: column;
-  transition: .15s;
-  overflow: hidden;
-
-  &.hidden {
-    width: size(0px);
-  }
 
   &__tabs {
     display: flex;

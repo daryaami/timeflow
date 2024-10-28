@@ -107,6 +107,7 @@ const widthParametr = computed(() => {
   justify-content: start;
   border: none;
   cursor: pointer;
+  transition: box-shadow .15s;
   
   &.overlap {
     outline: 1px solid $white;
@@ -123,6 +124,10 @@ const widthParametr = computed(() => {
 
   &.past {
     opacity: .5;
+  }
+
+  &.selected {
+    box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.5);
   }
 
   &__short-wrapper {

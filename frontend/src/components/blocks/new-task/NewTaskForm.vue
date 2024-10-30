@@ -13,7 +13,7 @@ import { computed, ref, watch, defineEmits } from "vue";
 import { getTomorrow } from "@/components/js/time-utils";
 import { getCookie } from "@/components/js/getCookie";
 import { convertMinToTimeString } from "@/components/js/time-utils";
-import { updateEvents } from "@/components/js/data/events";
+import { updateEvents } from "@/store/events";
 
 const emit = defineEmits(['loadingUpdate']);
 const isNotes = ref(false);

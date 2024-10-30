@@ -2,26 +2,25 @@
 import { computed, ref } from 'vue';
 import { getDecimalHours, getStringTime } from '@/components/js/time-utils';
 
-const props = defineProps(['event', 'gridHeight']);
+const props = defineProps(['card', 'gridHeight']);
 
 const duration = computed(() => {
-  return (new Date(props.event.end.dateTime) - new Date(props.event.start.dateTime)) / (1000 * 60 * 60)
+  return (new Date(props.card.end) - new Date(props.card.start)) / (1000 * 60 * 60)
 })
-const startTime = ref(getStringTime(props.event.start.dateTime));
-
-const card = ref()
+const startTime = ref(getStringTime(props.card.event.start.dateTime));
 
 
-const position = computed((() => getDecimalHours(props.event.start.dateTime) * 100 / 24));
+
+const position = computed((() => getDecimalHours(props.card.start) * 100 / 24));
 
 const height = computed(() => {
   const durationCalc = Math.max(duration.value, .25)
   return durationCalc * 100 / 24
 })
 
-const time = computed(() => `${startTime.value} - ${getStringTime(props.event.end.dateTime)}`);
+const time = computed(() => `${startTime.value} - ${getStringTime(props.card.event.end.dateTime)}`);
 const isPast = computed(() => {
-  if (new Date(props.event.end.dateTime) < new Date()) {
+  if (new Date(props.card.event.end.dateTime) < new Date()) {
     return true
   } else {
     return false
@@ -41,7 +40,7 @@ const grid = computed(() => {
 })
 
 const widthParametr = computed(() => {
-  return props.event.overlapLevel? props.event.overlapLevel + 1: 1 
+  return props.card.overlapLevel? props.card.overlapLevel + 1: 1 
 })
 </script>
 
@@ -57,24 +56,23 @@ const widthParametr = computed(() => {
     :style='{
       top: `${position}%`,
       height: `calc(${height}% - 2px)`,
-      backgroundColor: `${event.background_color}`,
-      color: `${event.foreground_color}`,
+      backgroundColor: `${card.event.background_color}`,
+      color: `${card.event.foreground_color}`,
       width: `calc(100% - ${widthParametr * .75}rem)`
     }'
 
-    ref="card"
     
     :class="{
       'no-padding': duration <= .25,
       'no-right-padding': duration <= .5,
       'past': isPast,
-      'overlap': event.overlapLevel,
+      'overlap': card.overlapLevel,
     }"
   >
     <div v-if="duration < 0.75"
       class="event-card__short-wrapper"
     >
-      <span class="event-card__name">{{ event.summary }},&nbsp;</span>
+      <span class="event-card__name">{{ card.event.summary }},&nbsp;</span>
       <span class="event-card__time">{{ startTime }}</span>
     </div>
     <div class="event-card__name-wrapper">
@@ -83,7 +81,7 @@ const widthParametr = computed(() => {
         :class="{
           'one-string': duration <= 1,
         }"
-      >{{ event.summary }}</span>
+      >{{ card.event.summary }}</span>
     </div>
       
     <span class="event-card__time"

@@ -75,13 +75,13 @@ onMounted(async () => {
       :key="day.date"  
     >
       <EventCardVue 
-        v-for="event, i in day.events"
+        v-for="card, i in day.cards"
         :key="i"
-        :event="event"
+        :card="card"
         :gridHeight="gridHeight"
-        @click=" emit('eventClick', event)"
+        @click=" emit('cardClick', card)"
         :class="{
-          'selected': selectedEvent === event,
+          'selected': selectedEvent === card.event,
         }"
       />
     </div>

@@ -10,7 +10,7 @@ import PlannerHeaderVue from '../components/blocks/planner/PlannerHeader.vue';
 import LoaderVue from '../components/blocks/loaders/Loader.vue';
 import EventInfoSidebar from '@/components/blocks/planner/EventInfoSidebar.vue';
 
-import { getEvents, updatedEvents } from '@/components/js/data/events';
+import { events } from '@/store/events';
 
 import PlannerDateVue from '../components/blocks/planner/PlannerDate.vue';
 import RightSidebarVue from '@/components/blocks/planner/RightSidebar.vue';
@@ -22,27 +22,29 @@ const days = ref([])
 
 const isLoading = ref(true);
 
-const createOverlappingEvents = (events) => {
-  const sortedEvents = events.sort((a, b) => new Date(a.start.dateTime) - new Date(b.start.dateTime))
+const createOverlappingCards = (cards) => {
+  const sortedCards = cards.sort((a, b) => new Date(a.start) - new Date(b.start))
 
-  for(let i = 1; i < sortedEvents.length; i++) {
-    const currentEvent = sortedEvents[i];
-    const currentEventStartDate = new Date(currentEvent.start.dateTime);
+  for(let i = 1; i < sortedCards.length; i++) {
+    const currentCard = sortedCards[i];
+    const currentCardStartDate = new Date(currentCard.start);
 
     for(let j = i - 1; j >= 0; j--) {
-      const compEvent = sortedEvents[j]
-      if (currentEventStartDate > new Date(compEvent.start.dateTime) && currentEventStartDate < new Date(compEvent.end.dateTime)) {
-        compEvent.overlapLevel? 
-          currentEvent.overlapLevel = compEvent.overlapLevel + 1:
-          currentEvent.overlapLevel = 1;
+      const compCard = sortedCards[j]
+      if (currentCardStartDate > new Date(compCard.start) && currentCardStartDate < new Date(compCard.end)) {
+        compCard.overlapLevel? 
+          currentCard.overlapLevel = compCard.overlapLevel + 1:
+          currentCard.overlapLevel = 1;
         
         break;
       }
     }
   }
   
-  return sortedEvents
+  return sortedCards
 }
+
+
 
 const createDays = (date, events) => {
   const monday = getCurrentWeekMonday(date)
@@ -52,53 +54,60 @@ const createDays = (date, events) => {
     const day = new Date(monday);
     day.setDate(monday.getDate() + i); 
 
-    // const filteredEvents = events.filter(event => 
-    //   isSameDay(day, new Date(event.start.dateTime))
-    // )
-
     days.value.push({
       weekday: day.toLocaleDateString('en-EN', { weekday: 'short' }),
       date: day.getDate(),
       isToday: isSameDay(day, new Date()),
       day: day,
-      events: [],
-      // events: createOverlappingEvents(filteredEvents),
+      cards: [],
     });
   }
 
-  // 1. Split multidays events & push into days
-  // ???Разбить events и cards в разные сущности???
   events.forEach(event => {
     const startDate = new Date(event.start.dateTime);
     const endDate = new Date(event.end.dateTime);
+
     if (startDate.getDate() === endDate.getDate()) {
       const day = days.value.find(day => day.date === startDate.getDate());
 
-      day.events.push(event);
+      const card = {
+        event: event,
+        start: event.start.dateTime,
+        end: event.end.dateTime,
+      }
+
+      day.cards.push(card);
     } else {
-      const firstDayEvent = JSON.parse(JSON.stringify(event));
-      firstDayEvent.end.dateTime = firstDayEvent.start.dateTime.replace(/T\d{2}:\d{2}:\d{2}/, "T23:59:00");
-      
+      const firstCard = {
+        event: event,
+        start: event.start.dateTime,
+        end: event.start.dateTime.replace(/T\d{2}:\d{2}:\d{2}/, "T23:59:00"),
+      }
+
       const firstDay = days.value.find(day => day.date === startDate.getDate());
 
-      firstDay.events.push(firstDayEvent);
+      firstDay.cards.push(firstCard);
 
-      const secondDayEvent = JSON.parse(JSON.stringify(event));
-      secondDayEvent.start.dateTime = secondDayEvent.end.dateTime.replace(/T\d{2}:\d{2}:\d{2}/, "T00:00:00");
+
+      const secondCard = {
+        event: event,
+        start: event.end.dateTime.replace(/T\d{2}:\d{2}:\d{2}/, "T00:00:00"),
+        end: event.end.dateTime,
+      }
+
       const secondDay = days.value.find(day => day.date === endDate.getDate());
 
-
-      secondDay.events.push(secondDayEvent);
+      secondDay.cards.push(secondCard);
     }
   })
   
-  // 2. Create overlapping event in days
+  days.value.forEach(day => day.cards = createOverlappingCards(day.cards))
 }
 
 const fetchData = async (date = new Date()) => {
   try {
-    const events = await getEvents(date);
-    createDays(date, events)
+    const fetchedEvents = await events.get(date);
+    createDays(date, fetchedEvents)
   } catch (error) {
     console.error('ошибка', error);
   } finally {
@@ -140,17 +149,8 @@ onMounted(() => {
   fetchData();
 })
 
-watch(updatedEvents, (newEvents) => {
-  newEvents.forEach(event => {
-    const dayToUpdate = days.value.find(day => 
-      isSameDay(day.day, new Date(event.start.dateTime)) || 
-      isSameDay(day.day, new Date(event.end.dateTime))
-    )
-    if (dayToUpdate) {
-      dayToUpdate.events.push(event);
-    }
-  })
-})
+// 
+
 
 
 // SelectedEvent

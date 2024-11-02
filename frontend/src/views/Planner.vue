@@ -81,7 +81,7 @@ onMounted(() => {
 
 const selectedEvent = ref(null);
 
-const eventClickHandler = (event) => {
+const cardClickHandler = (event) => {
   selectedEvent.value = event;
 }
 </script>
@@ -106,7 +106,7 @@ const eventClickHandler = (event) => {
           :events="currentEvents"
           :current-date="currentDate"
           :selectedEvent="selectedEvent"
-          @event-click="eventClickHandler"
+          @card-click="cardClickHandler"
         />
       
     </div>

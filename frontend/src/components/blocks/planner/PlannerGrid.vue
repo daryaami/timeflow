@@ -6,7 +6,7 @@ import { lines } from '@/components/js/data/lines';
 
 const props = defineProps(['events', 'currentDate',  'selectedEvent'])
 import PlannerDateVue from './PlannerDate.vue';
-const emit = defineEmits(['eventClick']);
+const emit = defineEmits(['cardClick']);
 
 
 const createOverlappingCards = (cards) => {
@@ -178,7 +178,7 @@ onMounted(async () => {
           :key="i"
           :card="card"
           :gridHeight="gridHeight"
-          @click=" emit('cardClick', card)"
+          @click=" emit('cardClick', card.event)"
           :class="{
             'selected': selectedEvent === card.event,
           }"

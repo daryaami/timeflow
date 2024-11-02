@@ -1,5 +1,5 @@
 <script setup>
-const emit = defineEmits(['prevWeek', 'nextWeek']);
+const emit = defineEmits(['prevWeek', 'nextWeek', 'updateEvents']);
 
 const props = defineProps(['isSidebarOpened', 'currentMonth']);
 

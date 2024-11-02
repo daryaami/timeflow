@@ -1,16 +1,16 @@
 <script setup>
-import MainAsideVue from "../blocks/MainAside.vue";
-import PageHeaderVue from "../blocks/PageHeader.vue";
+import MainAsideVue from "../components/blocks/MainAside.vue";
+import PageHeaderVue from "../components/blocks/PageHeader.vue";
 import { useRoute } from 'vue-router';
 
-import { userData } from "../js/data/userData";
-import { getUserData } from "../js/getUserData";
+import { userData } from "../components/js/data/userData";
+import { getUserData } from "../components/js/getUserData";
 import { onMounted } from "vue";
 
-const route = useRoute()
+const route = useRoute();
 
 onMounted(async () => {
-  userData.value = await getUserData()
+  userData.value = await getUserData();
 })
 </script>
 

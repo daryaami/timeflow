@@ -1,11 +1,100 @@
 <script setup>
-import { ref, nextTick, onMounted, defineEmits } from 'vue';
+import { ref, nextTick, onMounted, defineEmits, computed } from 'vue';
 import EventCardVue from './EventCard.vue';
-import { getStringTime, getDecimalHours } from '@/components/js/time-utils';
+import { getStringTime, getDecimalHours, getCurrentWeekMonday, isSameDay } from '@/components/js/time-utils';
 import { lines } from '@/components/js/data/lines';
 
-const props = defineProps(['days', 'selectedEvent'])
+const props = defineProps(['events', 'currentDate',  'selectedEvent'])
+import PlannerDateVue from './PlannerDate.vue';
 const emit = defineEmits(['eventClick']);
+
+
+const createOverlappingCards = (cards) => {
+  const sortedCards = cards.sort((a, b) => new Date(a.start) - new Date(b.start))
+
+  for(let i = 1; i < sortedCards.length; i++) {
+    const currentCard = sortedCards[i];
+    const currentCardStartDate = new Date(currentCard.start);
+
+    for(let j = i - 1; j >= 0; j--) {
+      const compCard = sortedCards[j]
+      if (currentCardStartDate > new Date(compCard.start) && currentCardStartDate < new Date(compCard.end)) {
+        compCard.overlapLevel? 
+          currentCard.overlapLevel = compCard.overlapLevel + 1:
+          currentCard.overlapLevel = 1;
+        
+        break;
+      }
+    }
+  }
+  
+  return sortedCards
+}
+
+const days = computed(() => {
+  const monday = getCurrentWeekMonday(props.currentDate)
+
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const day = new Date(monday);
+    day.setDate(monday.getDate() + i); 
+
+    days.push({
+      weekday: day.toLocaleDateString('en-EN', { weekday: 'short' }),
+      date: day.getDate(),
+      isToday: isSameDay(day, new Date()),
+      day: day,
+      cards: [],
+    });
+  }
+
+  props.events.forEach(event => {
+    const startDate = new Date(event.start.dateTime);
+    const endDate = new Date(event.end.dateTime);
+
+    if (startDate.getDate() === endDate.getDate()) {
+      const day = days.find(day => day.date === startDate.getDate());
+
+      if (!day) return;
+
+      const card = {
+        event: event,
+        start: event.start.dateTime,
+        end: event.end.dateTime,
+      }
+
+      day.cards.push(card);
+    } else {
+      const firstCard = {
+        event: event,
+        start: event.start.dateTime,
+        end: event.start.dateTime.replace(/T\d{2}:\d{2}:\d{2}/, "T23:59:00"),
+      }
+
+      const firstDay = days.find(day => day.date === startDate.getDate());
+
+    
+
+      if (firstDay)  firstDay.cards.push(firstCard);
+
+
+      const secondCard = {
+        event: event,
+        start: event.end.dateTime.replace(/T\d{2}:\d{2}:\d{2}/, "T00:00:00"),
+        end: event.end.dateTime,
+      }
+
+      const secondDay = days.find(day => day.date === endDate.getDate());
+
+      if (firstDay) secondDay.cards.push(secondCard);
+    }
+  })
+  
+  days.forEach(day => day.cards = createOverlappingCards(day.cards))
+
+  return days
+}) 
+
 
 // Grid Height
 const grid = ref(null)
@@ -67,42 +156,53 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="planner__grid"
-    ref="grid"
-  >
-    <div class="planner__day-column"
-      v-for="day in days"
-      :key="day.date"  
-    >
-      <EventCardVue 
-        v-for="card, i in day.cards"
-        :key="i"
-        :card="card"
-        :gridHeight="gridHeight"
-        @click=" emit('cardClick', card)"
-        :class="{
-          'selected': selectedEvent === card.event,
-        }"
+  <div class="planner__grid-wrapper" >
+
+    <div class="planner__days-header">
+      <PlannerDateVue 
+        v-for="day in days"
+        :key="day.date" 
+        :day="day"
       />
     </div>
-    <div class="planner__line"
-      v-for="(line, i) in lines"
-      :key="i"
-      :style="{ top: `${line.percent}%` }"
-    >
-      <div class="planner__line-time">{{ line.time }}</div>
-    </div>
 
-    <div class="planner__line planner__line--now"
-      :style="{ top: `${nowTimeLine.styleTop}` }"
-      ref="timeLineEl"
+    <div class="planner__grid"
+      ref="grid"
     >
-      <div class="planner__line-time">{{ nowTimeLine.caption }}</div>
-      <div class="planner__line-today-line"
-        ref="todayLine" 
-      ></div>
-    </div>
-  </div>  
+      <div class="planner__day-column"
+        v-for="day in days"
+        :key="day.date"  
+      >
+        <EventCardVue 
+          v-for="card, i in day.cards"
+          :key="i"
+          :card="card"
+          :gridHeight="gridHeight"
+          @click=" emit('cardClick', card)"
+          :class="{
+            'selected': selectedEvent === card.event,
+          }"
+        />
+      </div>
+      <div class="planner__line"
+        v-for="(line, i) in lines"
+        :key="i"
+        :style="{ top: `${line.percent}%` }"
+      >
+        <div class="planner__line-time">{{ line.time }}</div>
+      </div>
+
+      <div class="planner__line planner__line--now"
+        :style="{ top: `${nowTimeLine.styleTop}` }"
+        ref="timeLineEl"
+      >
+        <div class="planner__line-time">{{ nowTimeLine.caption }}</div>
+        <div class="planner__line-today-line"
+          ref="todayLine" 
+        ></div>
+      </div>
+    </div>  
+  </div>
 </template>
 
 <style lang="scss">

@@ -1,19 +1,22 @@
-import { reactive} from 'vue';
+import { reactive, ref } from 'vue';
 import { getCurrentWeekMonday, getStringDate, isSameDay } from '@/components/js/time-utils';
-// const updatedEvents = ref([])
+
+const eventBus = ref({})
 
 const events = reactive({
-  list: [],
+  _list: [],
   loadedMondays: [],
   async get(date = new Date()) {
+
     if (this.loadedMondays.filter(item => isSameDay(date, item)).length) {
-      return events;
+      return this._list;
     }
 
     let response = await fetch(`${window.location.origin}/planner_api/get_events?date=${getStringDate(date)}`);
+
     if (response.ok) {
       const data = await response.json();
-      this.list = [...this.list, ...data.events].reduce((acc, current) => {
+      this._list = [...this._list, ...data.events].reduce((acc, current) => {
         const x = acc.find(item => item.id === current.id);
         if (!x) {
           acc.push(current);
@@ -27,14 +30,14 @@ const events = reactive({
     } else {
       throw new Error('Failed to fetch events');
     }
+  },
+
+  update(newEvents) {
+    this._list = [...this._list, ...newEvents];
+    eventBus.value = true;
+    setTimeout(() => eventBus.value = false, 1000);
   }
 })
 
 
-const updateEvents = (newEvents) => {
-  // events = [...events, ...newEvents];
-  // updatedEvents.value = newEvents;
-}
-
-
-export { events, updateEvents, }
+export { events, eventBus }

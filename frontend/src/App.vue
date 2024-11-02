@@ -1,7 +1,7 @@
 <script setup>
 import { useRoute } from 'vue-router';
-import LoginLayout from './components/layouts/LoginLayout.vue';
-import DefaultLayout from './components/layouts/DefaultLayout.vue';
+import LoginLayout from './layouts/LoginLayout.vue';
+import DefaultLayout from './layouts/DefaultLayout.vue';
 
 const route = useRoute();
 </script>

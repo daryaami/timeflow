@@ -2,34 +2,43 @@
 const menuItems = [
   {
     title: 'Calendar',
-    class: 'main-menu__link--calendar',
+    icon: '#calendar-icon',
     isCurrent: true,
   },
   {
     title: 'Tasks',
-    class: 'main-menu__link--tasks',
+    icon: '#tasks-icon',
   },
   {
     title: 'Habits',
-    class: 'main-menu__link--habits',
+    icon: '#habits-icon',
+  },
+  {
+    title: 'Statistics',
+    icon: '#stats-icon',
   },
   {
     title: 'Settings',
-    class: 'main-menu__link--settings',
+    icon: '#settings-icon',
   },
 ]
 </script>
 
 <template>
-  <nav>
+  <nav class="main-menu">
     <ul class="main-menu__list">
       <li 
         v-for="item in menuItems"
         :key="item.title"
       >
         <a href="#" class="main-menu__link"
-          :class="[{'current': item.isCurrent}, item.class]"
-        >{{ item.title }}</a>
+          :class="[{'current': item.isCurrent}]"
+        >
+          <svg width="20" height="20">
+            <use :xlink:href="item.icon" />
+          </svg>
+          <span>{{ item.title }}</span>
+        </a>
       </li>
     </ul>
     
@@ -40,46 +49,35 @@ const menuItems = [
 
 <style lang="scss">
 .main-menu {
+  padding: 0 size(26px);
+
   &__list {
     padding: 0;
     margin: 0;
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: size(19px);
+    gap: size(8px);
   }
 
   &__link {
-    display: block;
-    padding: size(14px);
-    padding-left: size(56px);
+    display: flex;
+    align-items: center;
+    gap: size(13px);
+    padding: size(19px) size(23px);
     background-repeat: no-repeat;
     background-position: size(23px) center;
     border-radius: size(15px);
     background-size: size(20px) size(20px);
+    @include bold-title-24;
 
-    &--calendar {
-      @include calendar-icon;
-    }
-
-    &--tasks {
-      @include tasks-icon;
-    }
-
-    &--habits {
-      @include habits-icon;
-    }
-
-    &--settings {
-      @include settings-icon;
-    }
 
     &.current {
-      background-color: #474B59;
+      background-color: $dark-lines;
     }
 
     &:not(.current):hover {
-      background-color: #3E414E;
+      background-color: $dark-lines;
     }
   }
 

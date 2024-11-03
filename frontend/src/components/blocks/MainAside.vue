@@ -14,9 +14,8 @@ import MainMenuVue from "./MainMenu.vue";
 .main-aside {
   width: size(404px);
   height: 100%;
-  background-color: #363945;
+  background-color: $dark-white;
   display: block;
-  padding: 20px 26px;
-  color: #f5f5f5;
+  padding: 20px 0;
 }
 </style>

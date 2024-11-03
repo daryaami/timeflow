@@ -137,6 +137,7 @@ const cardClickHandler = (event) => {
   .planner-wrapper {
     display: flex;
     overflow: hidden;
+    flex-grow: 1;
   }
 
   .planner {

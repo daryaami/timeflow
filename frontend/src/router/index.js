@@ -31,7 +31,7 @@ const router = createRouter({
       meta: { 
         layout: 'default',
         title: 'Planner',
-        metaTitle: 'Planner' 
+        metaTitle: 'TimeFlow | Planner' 
       },
     },
   ]

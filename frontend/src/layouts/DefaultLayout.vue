@@ -16,11 +16,11 @@ onMounted(async () => {
 
 <template>
   <div class="page-wrapper">
-    <MainAsideVue />
+    <PageHeaderVue 
+      :title="route.meta.title"
+    />
     <div class="page-wrapper__main">
-      <PageHeaderVue 
-        :title="route.meta.title"
-      />
+      <MainAsideVue />
       <RouterView  />
     </div>
   </div>
@@ -28,17 +28,16 @@ onMounted(async () => {
 
 <style lang="scss">
 .page-wrapper {
-  display: flex;
   width: 100%;
   height: 100%;
-  align-items: flex-start;
+  display: grid;
+  grid-template-rows: min-content 1fr;
 
-   &__main {
-    flex-basis: 100%;
-    flex-shrink: 1;
-    height: 100%;
-    display: grid;
-    grid-template-rows: auto 1fr;
+  &__main {
+    display: flex;
+    width: 100%;
+    flex-grow: 1;
+    overflow: auto;
   }
 }
 </style>

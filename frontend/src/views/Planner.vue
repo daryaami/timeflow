@@ -9,13 +9,13 @@ import PlannerHeaderVue from '../components/blocks/planner/PlannerHeader.vue';
 import LoaderVue from '../components/blocks/loaders/Loader.vue';
 import EventInfoSidebar from '@/components/blocks/planner/EventInfoSidebar.vue';
 
+import { currentDate } from '@/store/currentDate';
 import { events, eventBus } from '@/store/events';
 
 import RightSidebarVue from '@/components/blocks/planner/RightSidebar.vue';
 
 const isSidebarOpened = ref(true);
 const currentEvents = ref();
-const currentDate = ref();
 
 // Get events
 

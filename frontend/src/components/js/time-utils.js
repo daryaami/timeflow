@@ -36,8 +36,8 @@ const getStringTime = (time) => {
   return `${hours}:${minutes}`;
 };
 
-const getTomorrow = () => {
-  const date = new Date();
+const getTomorrow = (d = new Date()) => {
+  const date = new Date(d);
   date.setDate(date.getDate() + 1);
   return date
 }

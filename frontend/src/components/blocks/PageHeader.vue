@@ -31,7 +31,7 @@ const props = defineProps({
   align-items: center;
   gap: 41px;
   width: 100%;
-  padding: 20px 17px 20px 46px;
+  padding: size(20px) size(17px) size(20px) size(46px);
   border-bottom: 1px solid $light-lines;
 
   &__title-wrapper {

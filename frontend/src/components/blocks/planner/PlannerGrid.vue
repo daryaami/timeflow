@@ -49,6 +49,7 @@ const days = computed(() => {
   }
 
   props.events.forEach(event => {
+    if (!event.start.dateTime) return
     const startDate = new Date(event.start.dateTime);
     const endDate = new Date(event.end.dateTime);
 

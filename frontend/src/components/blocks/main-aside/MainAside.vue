@@ -1,10 +1,11 @@
 <script setup>
 import MainMenuVue from "./MainMenu.vue";
+import AsideCalendar from "./AsideCalendar.vue";
 </script>
 
 <template>
   <div class="main-aside">
-    
+    <AsideCalendar />
     <MainMenuVue />
   </div>
 </template>

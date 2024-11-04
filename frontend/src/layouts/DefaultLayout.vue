@@ -1,5 +1,5 @@
 <script setup>
-import MainAsideVue from "../components/blocks/MainAside.vue";
+import MainAsideVue from "../components/blocks/main-aside/MainAside.vue";
 import PageHeaderVue from "../components/blocks/PageHeader.vue";
 import { useRoute } from 'vue-router';
 

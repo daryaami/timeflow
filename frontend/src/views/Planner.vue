@@ -22,10 +22,13 @@ const currentEvents = ref();
 const isLoading = ref(true);
 
 const fetchData = async (date = new Date()) => {
+  isLoading.value = true;
+
+  const monday = getCurrentWeekMonday(date)
+
   try {
-    const fetchedEvents = await events.get(date);
+    const fetchedEvents = await events.get(monday);
     currentEvents.value = fetchedEvents;
-    currentDate.value = date;
   } catch (error) {
     console.error('ошибка', error);
   } finally {
@@ -36,27 +39,25 @@ const fetchData = async (date = new Date()) => {
 
 const nextWeekHandler = async () => {
   if (isLoading.value) return
-  isLoading.value = true;
   
   const date = currentDate.value;
   const nextMonday = getCurrentWeekMonday(new Date(date.setDate(date.getDate() + 7)));
-
-  fetchData(nextMonday);
+  currentDate.value = nextMonday
 }
 
 const prevWeekHandler = async () => {
   if (isLoading.value) return
-  isLoading.value = true;
   const date = currentDate.value;
   const prevMonday = getCurrentWeekMonday(new Date(date.setDate(date.getDate() - 7)));
-  fetchData(prevMonday);
+  currentDate.value = prevMonday
 }
 
-watch(eventBus, (newVal) => {
+watch(currentDate, (newVal) => {
   if (newVal) {
     fetchData(currentDate.value);
   }
 });
+
 
 // Current Month
 

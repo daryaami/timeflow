@@ -1,6 +1,6 @@
 <script setup>
 import { currentDate } from '@/store/currentDate';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { getCurrentWeekMonday, getTomorrow } from '@/components/js/time-utils';
 
 const weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -33,6 +33,18 @@ const currentMonth = computed(() => {
   return `${currentCalendarDate.value.toLocaleString('default', { month: 'long' })} ${currentCalendarDate.value.getFullYear()}`;
 })
 
+const nextMonthHandler = () => {
+  currentCalendarDate.value = new Date(currentCalendarDate.value.setMonth(currentCalendarDate.value.getMonth() + 1)) 
+}
+
+const prevMonthHandler = () => {
+  currentCalendarDate.value = new Date(currentCalendarDate.value.setMonth(currentCalendarDate.value.getMonth() - 1)) 
+}
+
+watch(currentDate, (newValue) => {
+  currentCalendarDate.value = newValue;
+})
+
 </script>
 
 <template>
@@ -40,7 +52,23 @@ const currentMonth = computed(() => {
     <div class="aside-calendar__wrapper">
       <div class="aside-calendar__month-wrapper">
         <span class="aside-calendar__month">{{ currentMonth }}</span>
+        <div class="aside-calendar__buttons-wrapper">
+          <button class="aside-calendar__button"
+            @click="prevMonthHandler"
+          >
+            <svg width="16" height="16">
+              <use xlink:href="#arrow-prev"/>
+            </svg>
+          </button>
 
+          <button class="aside-calendar__button"
+            @click="nextMonthHandler"
+          >
+            <svg width="16" height="16">
+              <use xlink:href="#arrow-next"/>
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div class="aside-calendar__header aside-calendar__grid">
@@ -56,7 +84,8 @@ const currentMonth = computed(() => {
         <button class="aside-calendar__day aside-calendar__date"
           v-for="day, i in days"
           :key="i"
-          :class="{'aside-calendar__date--uncurrent': day.getMonth() != currentDate.getMonth() }"
+          :class="{'aside-calendar__date--uncurrent': day.getMonth() != currentCalendarDate.getMonth() }"
+          @click="currentDate = day"
         >
             {{ day.getDate() }}
       </button>
@@ -70,8 +99,15 @@ const currentMonth = computed(() => {
   padding-left: size(46px);
   margin-bottom: size(70px);
 
+  &__wrapper {
+    width: fit-content;
+  }
+
   &__month-wrapper {
     margin-bottom: size(32px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
   &__month {
@@ -115,6 +151,27 @@ const currentMonth = computed(() => {
     &--uncurrent {
       background: transparent;
       color: $dark-grey;
+    }
+  }
+
+  &__buttons-wrapper {
+    display: flex;
+    align-items: center;
+    gap: size(18px);
+  }
+
+  &__button {
+    @include reset-button;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: size(16px);
+    height: size(16px);
+
+    & svg {
+      display: block;
+      width: 100%;
+      height: 100%;
     }
   }
 }

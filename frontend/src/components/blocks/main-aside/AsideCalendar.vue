@@ -1,11 +1,13 @@
 <script setup>
-import { currentDate } from '@/store/currentDate';
 import { ref, computed, watch } from 'vue';
 import { getCurrentWeekMonday, getTomorrow } from '@/components/js/time-utils';
+import { useCurrentDateStore } from '@/store/currentDate';
 
 const weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-const currentCalendarDate = ref(new Date(currentDate.value));
+const currentDate = useCurrentDateStore()
+
+const currentCalendarDate = ref(new Date(currentDate.date));
 
 
 const days = computed(() => {
@@ -42,7 +44,7 @@ const prevMonthHandler = () => {
 }
 
 watch(currentDate, (newValue) => {
-  currentCalendarDate.value = newValue;
+  currentCalendarDate.value = newValue.date;
 })
 
 </script>
@@ -85,7 +87,7 @@ watch(currentDate, (newValue) => {
           v-for="day, i in days"
           :key="i"
           :class="{'aside-calendar__date--uncurrent': day.getMonth() != currentCalendarDate.getMonth() }"
-          @click="currentDate = day"
+          @click="currentDate.setDate(day)"
         >
             {{ day.getDate() }}
       </button>

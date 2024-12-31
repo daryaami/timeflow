@@ -9,19 +9,21 @@ import PlannerHeaderVue from '../components/blocks/planner/PlannerHeader.vue';
 import LoaderVue from '../components/blocks/loaders/Loader.vue';
 import EventInfoSidebar from '@/components/blocks/planner/EventInfoSidebar.vue';
 
-import { currentDate } from '@/store/currentDate';
-import { events, eventBus } from '@/store/events';
+import { events } from '@/store/events';
 
 import RightSidebarVue from '@/components/blocks/planner/RightSidebar.vue';
+import { useCurrentDateStore } from '@/store/currentDate';
 
 const isSidebarOpened = ref(true);
 const currentEvents = ref();
+
+const currentDate = useCurrentDateStore()
 
 // Get events
 
 const isLoading = ref(true);
 
-const fetchData = async (date = new Date()) => {
+const fetchData = async (date) => {
   isLoading.value = true;
 
   const monday = getCurrentWeekMonday(date)
@@ -39,31 +41,24 @@ const fetchData = async (date = new Date()) => {
 
 const nextWeekHandler = async () => {
   if (isLoading.value) return
-  
-  const date = currentDate.value;
-  const nextMonday = getCurrentWeekMonday(new Date(date.setDate(date.getDate() + 7)));
-  currentDate.value = nextMonday
+  currentDate.toNextWeek()
 }
 
 const prevWeekHandler = async () => {
   if (isLoading.value) return
-  const date = currentDate.value;
-  const prevMonday = getCurrentWeekMonday(new Date(date.setDate(date.getDate() - 7)));
-  currentDate.value = prevMonday
+  currentDate.toPrevWeek()
 }
 
 watch(currentDate, (newVal) => {
-  if (newVal) {
-    fetchData(currentDate.value);
-  }
-});
+  fetchData(newVal.date)
+})
 
 
 // Current Month
 
 const currentMonth = computed(() => {
-  if (currentDate.value) {
-    const now = currentDate.value;
+  if (currentDate.date) {
+    const now = currentDate.date;
     return `${now.toLocaleString('default', { month: 'long' })} ${now.getFullYear()}`;
   } else {
     return ''
@@ -71,12 +66,9 @@ const currentMonth = computed(() => {
 })
 
 onMounted(() => {
-  fetchData();
+  fetchData(currentDate.date);
 })
-
 // 
-
-
 
 // SelectedEvent
 
@@ -105,7 +97,7 @@ const cardClickHandler = (event) => {
           v-if="!isLoading"
 
           :events="currentEvents"
-          :current-date="currentDate"
+          :current-date="currentDate.date"
           :selectedEvent="selectedEvent"
           @card-click="cardClickHandler"
         />

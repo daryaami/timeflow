@@ -1,21 +1,21 @@
 <script setup>
 import { ref, onMounted, nextTick, computed, watch } from 'vue';
 import { userData } from '@/components/js/data/userData';
-import { getCurrentWeekMonday } from '@/components/js/time-utils';
 
 import PlannerGrid from '@/components/blocks/planner/PlannerGrid.vue';
-
 import PlannerHeaderVue from '../components/blocks/planner/PlannerHeader.vue';
 import LoaderVue from '../components/blocks/loaders/Loader.vue';
 import EventInfoSidebar from '@/components/blocks/planner/EventInfoSidebar.vue';
 
-import { events } from '@/store/events';
+import { useEventsStore } from '@/store/events';
 
 import RightSidebarVue from '@/components/blocks/planner/RightSidebar.vue';
 import { useCurrentDateStore } from '@/store/currentDate';
 
 const isSidebarOpened = ref(true);
 const currentEvents = ref();
+
+const eventsStore = useEventsStore()
 
 const currentDate = useCurrentDateStore()
 
@@ -26,10 +26,8 @@ const isLoading = ref(true);
 const fetchData = async (date) => {
   isLoading.value = true;
 
-  const monday = getCurrentWeekMonday(date)
-
   try {
-    const fetchedEvents = await events.get(monday);
+    const fetchedEvents = await eventsStore.getEvents(date);
     currentEvents.value = fetchedEvents;
   } catch (error) {
     console.error('ошибка', error);
@@ -39,36 +37,17 @@ const fetchData = async (date) => {
   }
 }
 
-const nextWeekHandler = async () => {
-  if (isLoading.value) return
-  currentDate.toNextWeek()
-}
-
-const prevWeekHandler = async () => {
-  if (isLoading.value) return
-  currentDate.toPrevWeek()
-}
-
 watch(currentDate, (newVal) => {
   fetchData(newVal.date)
 })
 
-
-// Current Month
-
-const currentMonth = computed(() => {
-  if (currentDate.date) {
-    const now = currentDate.date;
-    return `${now.toLocaleString('default', { month: 'long' })} ${now.getFullYear()}`;
-  } else {
-    return ''
-  }
+watch(eventsStore, () => {
+  fetchData(currentDate.date)
 })
 
 onMounted(() => {
   fetchData(currentDate.date);
 })
-// 
 
 // SelectedEvent
 
@@ -84,9 +63,7 @@ const cardClickHandler = (event) => {
     <div class="planner">
       <PlannerHeaderVue 
         v-model="isSidebarOpened"
-        :currentMonth="currentMonth"
-        @prevWeek="prevWeekHandler"
-        @nextWeek="nextWeekHandler"
+        :isLoading="isLoading"
       />
       <div class="planner__loader-wrapper" v-if="isLoading">
         <LoaderVue />

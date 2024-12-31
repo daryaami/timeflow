@@ -13,9 +13,12 @@ import { computed, ref, watch, defineEmits } from "vue";
 import { getTomorrow } from "@/components/js/time-utils";
 import { getCookie } from "@/components/js/getCookie";
 import { convertMinToTimeString } from "@/components/js/time-utils";
-import { events } from "@/store/events";
+import { useEventsStore } from "@/store/events";
 
 const emit = defineEmits(['loadingUpdate']);
+
+const eventsStore = useEventsStore()
+
 const isNotes = ref(false);
 const isMinDurationrValid = ref(true);
 const isLoading = ref(false);
@@ -120,7 +123,7 @@ const submitHandler = async (e) => {
     console.error('ошибка', error);
   }
 
-  events.update(response.events);
+  eventsStore.update(response.events);
   isLoading.value = false;
   isLoaded.value = true;
   emit('loadingUpdate', isLoading.value);

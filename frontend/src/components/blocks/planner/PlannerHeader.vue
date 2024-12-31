@@ -1,9 +1,33 @@
 <script setup>
-const emit = defineEmits(['prevWeek', 'nextWeek', 'updateEvents']);
+import { computed } from 'vue';
+import { useCurrentDateStore } from '@/store/currentDate';
 
-const props = defineProps(['isSidebarOpened', 'currentMonth']);
+const emit = defineEmits(['prevWeek', 'nextWeek']);
+
+const currentDate = useCurrentDateStore()
+
+const props = defineProps(['isSidebarOpened', 'isLoading']);
 
 const isSidebarOpened = defineModel();
+
+const currentMonth = computed(() => {
+  if (currentDate.date) {
+    const now = currentDate.date;
+    return `${now.toLocaleString('default', { month: 'long' })} ${now.getFullYear()}`;
+  } else {
+    return ''
+  }
+})
+
+const nextWeekHandler = async () => {
+  if (props.isLoading) return
+  currentDate.toNextWeek()
+}
+
+const prevWeekHandler = async () => {
+  if (props.isLoading) return
+  currentDate.toPrevWeek()
+}
 </script>
 
 <template>
@@ -11,10 +35,10 @@ const isSidebarOpened = defineModel();
     <span class="planner-header__date">{{ currentMonth }}</span>
     <div class="planner-header__buttons">
       <button class="planner-header__date-button planner-header__date-button--prev icon-button"
-        @click="emit('prevWeek')"
+        @click="prevWeekHandler"
       ></button>
       <button class="planner-header__date-button planner-header__date-button--next icon-button"
-        @click="emit('nextWeek')"
+        @click="nextWeekHandler"
       ></button>
     </div>
 

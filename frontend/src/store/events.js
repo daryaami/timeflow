@@ -1,22 +1,24 @@
-import { reactive, ref } from 'vue';
+import { defineStore } from "pinia";
+import { ref } from 'vue';
 import { getCurrentWeekMonday, getStringDate, isSameDay } from '@/components/js/time-utils';
 
-const eventBus = ref({})
 
-const events = reactive({
-  _list: [],
-  loadedMondays: [],
-  async get(date = new Date()) {
+export const useEventsStore = defineStore("events", () => {
+  const events = ref([]);
+  const loadedMondays = [];
 
-    if (this.loadedMondays.filter(item => isSameDay(date, item)).length) {
-      return this._list;
+  const getEvents = async (date = new Date()) => {
+    const monday = getCurrentWeekMonday(date)
+
+    if (loadedMondays.filter(item => isSameDay(monday, item)).length) {
+      return events.value
     }
 
-    let response = await fetch(`${window.location.origin}/planner_api/get_events?date=${getStringDate(date)}`);
+    let response = await fetch(`${window.location.origin}/planner_api/get_events/?date=${getStringDate(monday)}`);
 
     if (response.ok) {
       const data = await response.json();
-      this._list = [...this._list, ...data.events].reduce((acc, current) => {
+      events.value = [...events.value, ...data.events].reduce((acc, current) => {
         const x = acc.find(item => item.id === current.id);
         if (!x) {
           acc.push(current);
@@ -24,20 +26,22 @@ const events = reactive({
         return acc;
       }, [])
 
-      const loadedMonday = getCurrentWeekMonday(date);
-      this.loadedMondays.push(loadedMonday);
+      loadedMondays.push(monday);
       return data.events;
     } else {
       throw new Error('Failed to fetch events');
     }
-  },
+  }
 
-  update(newEvents) {
-    this._list = [...this._list, ...newEvents];
-    eventBus.value = true;
-    setTimeout(() => eventBus.value = false, 1000);
+  const update = (newEvents) => {
+    events.value = [...events.value, ...newEvents];
+  }
+
+  return {
+    events,
+    loadedMondays,
+    getEvents,
+    update,
   }
 })
 
-
-export { events, eventBus }

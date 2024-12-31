@@ -1,7 +1,6 @@
 <script setup>
 import NewTaskBlockVue from './new-task/NewTaskBlock.vue';
 import SearchBlock from './SearchBlock.vue'
-import { userData } from '../js/data/userData';
 
 import logoIcon from '@/assets/img/logo.svg';
 
@@ -19,7 +18,7 @@ const props = defineProps({
 
       <h1 class="page-header__title">TimeFlow</h1>
     </div>
-    <new-task-block-vue v-if="userData" />
+    <new-task-block-vue/>
     <search-block />
   </div>
 </template>

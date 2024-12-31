@@ -2,7 +2,6 @@ import { defineStore } from "pinia";
 import { ref } from 'vue';
 import { getCurrentWeekMonday, getStringDate, isSameDay } from '@/components/js/time-utils';
 
-
 export const useEventsStore = defineStore("events", () => {
   const events = ref([]);
   const loadedMondays = [];

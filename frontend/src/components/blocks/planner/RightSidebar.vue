@@ -1,8 +1,10 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue';
-import { userData } from '@/components/js/data/userData';
+import { onMounted, ref, watch, computed } from 'vue';
+import { useUserDataStore } from '@/store/userData';
+
 import TaskItemVue from './TaskItem.vue';
 
+const userDataStore = useUserDataStore()
 
 const underlineRight = ref();
 const underlineLeft = ref();
@@ -10,7 +12,7 @@ const habitsButton = ref(null);
 const tasksButton = ref(null);
 const activeTab = ref(null);
 
-const tasks = ref(userData.value.tasks);
+const tasks = computed(() => userDataStore.userData.tasks);
 
 onMounted(() => {
   activeTab.value = tasksButton.value; 

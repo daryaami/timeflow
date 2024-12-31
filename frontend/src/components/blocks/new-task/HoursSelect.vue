@@ -1,13 +1,19 @@
 <script setup>
-import { onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useDropdown } from "@/components/composables/dropdown";
-import { userData } from "@/components/js/data/userData";
+import { useUserDataStore } from "@/store/userData";
 
 const { isDropdownOpen, dropdownClickHandler, closeDropdown } = useDropdown();
+const userDataStore = useUserDataStore()
 
-const currentOption = ref();
 const currentValue = defineModel();
-const hours = ref(false);
+
+const hours = computed(() => userDataStore.userData.hours)
+const currentOption = ref(userDataStore.userData.hours[0])
+
+watch(hours, (newValue) => {
+  currentOption.value = newValue[0];
+})
 
 const optionClickHandler = (option) => {
   currentOption.value = option;
@@ -18,8 +24,8 @@ watch(currentOption, (newValue) => {
   currentValue.value = newValue.id;
 })
 
+
 onMounted(async () => {
-  hours.value = userData.value.hours;
   currentOption.value = hours.value[0];
 })
 </script>

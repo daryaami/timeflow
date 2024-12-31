@@ -3,15 +3,8 @@ import MainAsideVue from "../components/blocks/main-aside/MainAside.vue";
 import PageHeaderVue from "../components/blocks/PageHeader.vue";
 import { useRoute } from 'vue-router';
 
-import { userData } from "../components/js/data/userData";
-import { getUserData } from "../components/js/getUserData";
-import { onMounted } from "vue";
-
 const route = useRoute();
 
-onMounted(async () => {
-  userData.value = await getUserData();
-})
 </script>
 
 <template>
